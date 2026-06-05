@@ -1,0 +1,39 @@
+{
+  "name": "@simple-invoice/backend",
+  "private": true,
+  "scripts": {
+    "dev": "bun --env-file=../../.env --watch src/main.ts",
+    "build": "bun build src/main.ts --outdir dist --target bun",
+    "start": "bun dist/main.js",
+    "db:generate": "bunx drizzle-kit generate",
+    "db:migrate": "bun --env-file=../../.env run src/db/migrate.ts",
+    "db:seed": "bun --env-file=../../.env run src/db/seed.ts",
+    "db:studio": "bunx drizzle-kit studio",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/passport": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/swagger": "^11.0.0",
+    "@simple-invoice/shared": "workspace:*",
+    "bcrypt": "^6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "drizzle-orm": "^0.45.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "postgres": "^3.4.5",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^5.0.0",
+    "@types/passport-jwt": "^4.0.1",
+    "drizzle-kit": "^0.31.0",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "simple-invoice",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "bun run dev:be & bun run dev:fe & wait",
+    "dev:be": "cd apps/be && bun run dev",
+    "dev:fe": "cd apps/fe && bun run dev",
+    "test": "cd apps/be && bun test && cd ../../apps/fe && bun test",
+    "lint": "bunx biome check .",
+    "format": "bunx biome format --write ."
+  }
+}
