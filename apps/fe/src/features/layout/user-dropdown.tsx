@@ -1,3 +1,4 @@
+import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth';
 import { type Locale, useLocale } from '@/lib/i18n';
 import { type Theme, useTheme } from '@/lib/theme';
@@ -25,7 +26,7 @@ export default function UserDropdown() {
   const navigate = useNavigate();
   const intl = useIntl();
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
+  const setGuest = useAuthStore((s) => s.setGuest);
 
   const { theme, setTheme } = useTheme();
   const { locale, setLocale } = useLocale();
@@ -40,9 +41,17 @@ export default function UserDropdown() {
   if (!user) return null;
   const initial = user.fullname?.charAt(0)?.toUpperCase() ?? 'U';
 
-  function handleLogout() {
+  async function handleLogout() {
     setOpen(false);
-    logout();
+    // Tell the BE to clear the httpOnly cookie. Even if that call fails
+    // (network blip), we still flip the local state to guest so the user
+    // sees the login screen — the cookie will expire on its own.
+    try {
+      await api.auth.logout();
+    } catch {
+      /* ignore */
+    }
+    setGuest();
     navigate('/login');
   }
 

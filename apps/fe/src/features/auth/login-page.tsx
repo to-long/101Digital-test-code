@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 export default function LoginPage() {
   const navigate = useNavigate();
   const intl = useIntl();
-  const setAuth = useAuthStore((s) => s.setAuth);
+  const setUser = useAuthStore((s) => s.setUser);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await api.auth.login(email, password);
-      setAuth(res.accessToken, res.user);
+      // The JWT is set by the BE as an httpOnly cookie — we don't touch it
+      // here. We only need to remember the user profile in memory.
+      setUser(res.user);
       toast.success(intl.formatMessage({ id: 'login.toast.success' }));
       navigate('/');
     } catch (err: any) {

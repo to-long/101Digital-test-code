@@ -103,7 +103,7 @@ flowchart LR
     DB[("PostgreSQL 17<br/>users • invoices<br/>invoice_items")]
     Swagger[/"Swagger UI<br/>/api/docs"/]
 
-    FE -->|"HTTPS · Bearer JWT<br/>(via Vite proxy in dev)"| Nest
+    FE -->|"HTTPS · httpOnly cookie<br/>(via Vite proxy in dev)"| Nest
     Nest --> Svc
     Svc --> Drz
     Drz <--> DB
@@ -162,19 +162,21 @@ flowchart TB
 sequenceDiagram
     actor User
     participant FE as React (LoginPage)
-    participant Store as Zustand (auth)
+    participant Store as Zustand (user only)
+    participant Browser as Browser cookie jar
     participant BE as NestJS Auth
     participant DB as PostgreSQL
 
     User->>FE: enter email + password
-    FE->>BE: POST /api/auth/login
+    FE->>BE: POST /api/auth/login<br/>(credentials: 'include')
     BE->>DB: SELECT user WHERE email=$1
     DB-->>BE: { passwordHash, id, ... }
     BE->>BE: bcrypt.compare(password, hash)
     alt valid
         BE->>BE: sign JWT (sub, email, exp)
+        BE-->>Browser: Set-Cookie: auth_token=...<br/>HttpOnly · SameSite=Lax · Secure (prod)
         BE-->>FE: 201 { accessToken, user }
-        FE->>Store: setAuth(token, user) → localStorage
+        FE->>Store: setUser(user)<br/>(token NOT stored on the client)
         FE->>User: redirect to /
     else invalid
         BE-->>FE: 401 Unauthorized
@@ -182,10 +184,22 @@ sequenceDiagram
     end
 
     Note over FE,BE: Subsequent requests
-    FE->>BE: GET /api/invoices (Authorization: Bearer ...)
-    BE->>BE: JwtAuthGuard verifies signature + exp
+    FE->>BE: GET /api/invoices<br/>(credentials: 'include')
+    Browser->>BE: Cookie: auth_token=...
+    BE->>BE: JwtAuthGuard reads cookie OR Bearer header<br/>(curl/tests can still use Bearer)
     BE-->>FE: 200 { data, paging }
+
+    Note over FE,BE: On app reload
+    FE->>BE: GET /api/auth/me<br/>(credentials: 'include')
+    Browser->>BE: Cookie: auth_token=...
+    alt cookie valid
+        BE-->>FE: 200 user → setUser(user) → authed
+    else cookie missing/expired
+        BE-->>FE: 401 → setGuest() → redirect /login
+    end
 ```
+
+The JWT is stored in an **httpOnly cookie** (not localStorage) so it can't be read by JavaScript — protects against token theft via XSS. The `credentials: 'include'` flag on every fetch tells the browser to attach the cookie; CORS on the BE is configured with `credentials: true` and an explicit `origin` for browser compatibility. The same JwtStrategy reads from `Cookie:` first, then falls back to `Authorization: Bearer …`, so curl, the BDD suite, and any API consumer that doesn't have a cookie jar still work.
 
 ### Create invoice — request flow
 

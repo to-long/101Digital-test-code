@@ -11,18 +11,25 @@ import { useAuthStore } from './auth';
 const BASE = '/api';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const token = useAuthStore.getState().token;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options?.headers as Record<string, string>),
   };
-  if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE}${path}`, { ...options, headers });
+  const res = await fetch(`${BASE}${path}`, {
+    ...options,
+    headers,
+    // The JWT is in an httpOnly cookie set by /auth/login. The browser
+    // sends it automatically only when credentials are explicitly
+    // included on the fetch.
+    credentials: 'include',
+  });
 
   if (!res.ok) {
     if (res.status === 401) {
-      useAuthStore.getState().logout();
+      // Cookie missing / expired / invalid — flip to guest so guards bounce
+      // the user to /login.
+      useAuthStore.getState().setGuest();
     }
     const body = await res.json().catch(() => ({}));
     const msg = Array.isArray(body.message)
@@ -31,7 +38,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     throw new Error(msg);
   }
 
-  // 204 No Content (used by DELETE) has no body to parse.
+  // 204 No Content (used by DELETE / logout) has no body to parse.
   if (res.status === 204) return undefined as T;
   return res.json();
 }
@@ -44,6 +51,7 @@ export const api = {
         body: JSON.stringify({ email, password }),
       }),
     me: () => request<User>('/auth/me'),
+    logout: () => request<void>('/auth/logout', { method: 'POST' }),
   },
   invoices: {
     list: (params: Record<string, string>) =>
