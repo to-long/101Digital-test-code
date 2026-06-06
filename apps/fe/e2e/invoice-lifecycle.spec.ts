@@ -98,10 +98,11 @@ test.describe('Feature: Soft delete an invoice', () => {
     await page.locator('tbody').getByText(number).click();
     await page.waitForURL(/\/invoices\/[0-9a-f-]+$/i);
 
-    // When the user clicks the Delete icon and confirms
-    await page.click('[aria-label="Delete"]');
+    // When the user clicks the Delete button and confirms
+    // (only one Delete button exists at this point — the dialog opens after).
+    await page.getByRole('button', { name: 'Delete' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
-    // The confirm button inside the dialog is the second one (Cancel is first)
+    // Then there are two Delete buttons; pick the one inside the dialog.
     await page.locator('div[role="dialog"]').getByRole('button', { name: /delete/i }).click();
 
     // Then a toast confirms deletion and the user is on the list

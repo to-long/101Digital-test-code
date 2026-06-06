@@ -1,11 +1,13 @@
+import { api } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { useDeleteInvoice, useInvoice } from '@/lib/swr';
 import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
-import { ArrowLeft, Pencil, Printer, Trash2 } from 'lucide-react';
+import { ArrowLeft, Pencil, Printer, RotateCcw, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { mutate as globalMutate } from 'swr';
 import InvoiceStatusBadge from './components/invoice-status-badge';
 
 export default function InvoiceDetailPage() {
@@ -16,6 +18,33 @@ export default function InvoiceDetailPage() {
   const { data: inv, isLoading, error } = useInvoice(id);
   const { trigger: triggerDelete, isMutating: isDeleting } = useDeleteInvoice(id!);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+
+  async function handleRestore() {
+    if (!inv) return;
+    setIsRestoring(true);
+    try {
+      await api.invoices.restore(inv.invoiceId);
+      toast.success(intl.formatMessage({ id: 'detail.toast.restored' }), {
+        description: intl.formatMessage(
+          { id: 'detail.toast.restoredDesc' },
+          { number: inv.invoiceNumber },
+        ),
+      });
+      // Refetch this invoice (now visible again with its real status) and
+      // invalidate every list cache so the recycle bin no longer shows it.
+      globalMutate(['invoice', inv.invoiceId]);
+      globalMutate((key) => Array.isArray(key) && key[0] === 'invoices', undefined, {
+        revalidate: true,
+      });
+    } catch (err: any) {
+      toast.error(intl.formatMessage({ id: 'detail.toast.restoreError' }), {
+        description: err.message,
+      });
+    } finally {
+      setIsRestoring(false);
+    }
+  }
 
   async function handleDelete() {
     if (!inv) return;
@@ -106,37 +135,57 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="rounded-full border border-gray-200 bg-white px-3 py-1.5 flex items-center gap-1.5 hover:bg-gray-50 transition-colors cursor-pointer"
-          >
-            <Printer className="h-3.5 w-3.5" />
-            <span className="text-[13px] font-medium">
-              <FormattedMessage id="common.print" />
-            </span>
-          </button>
-          {inv.status !== 'Paid' && (
+          {inv.status === 'Deleted' ? (
+            // Deleted invoices have a single primary action: restore.
+            // Everything else (print, edit, delete-again) is hidden — the
+            // record is in the recycle bin and can't be acted on otherwise.
+            <button
+              type="button"
+              onClick={handleRestore}
+              disabled={isRestoring}
+              className="rounded-full bg-blue-500 text-white px-3.5 py-1.5 flex items-center gap-1.5 hover:bg-blue-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span className="text-[13px] font-semibold">
+                <FormattedMessage id="detail.restore" />
+              </span>
+            </button>
+          ) : (
             <>
               <button
                 type="button"
-                onClick={() => setConfirmOpen(true)}
-                aria-label="Delete"
-                title={intl.formatMessage({ id: 'detail.delete' })}
-                className="rounded-full border border-gray-200 bg-white text-red-600 p-1.5 flex items-center justify-center hover:bg-red-50 transition-colors cursor-pointer"
+                onClick={() => window.print()}
+                className="rounded-full border border-gray-200 bg-white px-3 py-1.5 flex items-center gap-1.5 hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate(`/invoices/${id}/edit`)}
-                className="rounded-full bg-blue-500 text-white px-3.5 py-1.5 flex items-center gap-1.5 hover:bg-blue-600 transition-colors cursor-pointer"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                <span className="text-[13px] font-semibold">
-                  <FormattedMessage id="detail.editInvoice" />
+                <Printer className="h-3.5 w-3.5" />
+                <span className="text-[13px] font-medium">
+                  <FormattedMessage id="common.print" />
                 </span>
               </button>
+              {inv.status !== 'Paid' && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmOpen(true)}
+                    className="rounded-full border border-gray-200 bg-white text-red-600 px-3 py-1.5 flex items-center gap-1.5 hover:bg-red-50 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span className="text-[13px] font-medium">
+                      <FormattedMessage id="detail.delete" />
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/invoices/${id}/edit`)}
+                    className="rounded-full bg-blue-500 text-white px-3.5 py-1.5 flex items-center gap-1.5 hover:bg-blue-600 transition-colors cursor-pointer"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span className="text-[13px] font-semibold">
+                      <FormattedMessage id="detail.editInvoice" />
+                    </span>
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>
