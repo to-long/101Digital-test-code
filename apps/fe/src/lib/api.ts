@@ -4,6 +4,7 @@ import type {
   Invoice,
   PaginatedResponse,
   CreateInvoiceRequest,
+  UpdateInvoiceRequest,
 } from '@simple-invoice/shared';
 import { useAuthStore } from './auth';
 
@@ -47,6 +48,11 @@ export const api = {
     create: (data: CreateInvoiceRequest) =>
       request<Invoice>('/invoices', {
         method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    update: (id: string, data: UpdateInvoiceRequest) =>
+      request<Invoice>(`/invoices/${id}`, {
+        method: 'PUT',
         body: JSON.stringify(data),
       }),
   },
