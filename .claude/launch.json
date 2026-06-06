@@ -1,0 +1,38 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Dev (BE + FE watch)",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "--cwd=/Users/long.to/Documents/PRIVATE/101Digital-test-code",
+        "run",
+        "dev"
+      ],
+      "port": 3041,
+      "autoPort": false
+    },
+    {
+      "name": "Backend only (NestJS)",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "--cwd=/Users/long.to/Documents/PRIVATE/101Digital-test-code/apps/be",
+        "run",
+        "dev"
+      ],
+      "port": 4001,
+      "autoPort": false
+    },
+    {
+      "name": "Frontend only (Vite)",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "--cwd=/Users/long.to/Documents/PRIVATE/101Digital-test-code/apps/fe",
+        "run",
+        "dev"
+      ],
+      "port": 3041,
+      "autoPort": false
+    }
+  ]
+}

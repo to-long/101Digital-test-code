@@ -1,7 +1,129 @@
-node_modules
-dist
+# ─── Dependencies ───────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+.pnpm-store/
+.bun/
+jspm_packages/
+web_modules/
+
+# ─── Build outputs / bundler caches ─────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+out/
+.next/
+.nuxt/
+.vite/
+.turbo/
+.cache/
+.parcel-cache/
+.svelte-kit/
+.docusaurus/
+
+# ─── TypeScript ─────────────────────────────────────────────────────────────
+*.tsbuildinfo
+.tscache/
+
+# ─── Test / coverage ────────────────────────────────────────────────────────
+coverage/
+*.lcov
+.nyc_output/
+.vitest-cache/
+playwright-report/
+test-results/
+
+# ─── Linter / formatter caches ──────────────────────────────────────────────
+.eslintcache
+.stylelintcache
+.biome/
+
+# ─── Environment / secrets ──────────────────────────────────────────────────
+# Keep .env.example committed; ignore actual env files which may contain secrets.
 .env
-.DS_Store
+.env.local
+.env.*.local
+.env.development.local
+.env.production.local
+.env.test.local
+
+# Keys / certificates — never commit
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+*.gpg
+.secrets/
+
+# ─── Logs ───────────────────────────────────────────────────────────────────
 *.log
-coverage
-.vite
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+bun-debug.log*
+
+# ─── Runtime / process artifacts ────────────────────────────────────────────
+pids/
+*.pid
+*.seed
+*.pid.lock
+*.heapsnapshot
+*.cpuprofile
+
+# ─── OS-level junk ──────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ─── Editor / IDE — keep personal config out of the repo ────────────────────
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.cursor/
+.zed/
+.fleet/
+*.swp
+*.swo
+*.swn
+*~
+.history/
+.ionide/
+.devcontainer/.cache/
+
+# ─── Claude Code — keep team-shared launch.json, ignore personal settings ───
+.claude/settings.local.json
+.claude/cache/
+.claude/projects/
+
+# ─── Docker volumes / dumps ─────────────────────────────────────────────────
+*.sql.gz
+postgres-data/
+.docker-data/
+
+# ─── Database / Drizzle dev artifacts ───────────────────────────────────────
+*.sqlite
+*.sqlite-journal
+*.db
+*.db-journal
+
+# ─── Misc ───────────────────────────────────────────────────────────────────
+*.tgz
+*.tar.gz
+*.zip
+*.bak
+.serverless/
