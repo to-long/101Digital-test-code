@@ -1,5 +1,5 @@
 import type { Currency } from '../constants/currencies';
-import type { InvoiceDisplayStatus } from '../constants/status';
+import type { InvoiceDbStatus, InvoiceDisplayStatus } from '../constants/status';
 
 export interface Customer {
   fullname: string;
@@ -49,6 +49,27 @@ export interface CreateInvoiceRequest {
   dueDate: string;
   currency: Currency;
   description?: string | null;
+  item: {
+    name: string;
+    quantity: number;
+    rate: number;
+  };
+  taxPercent: number;
+  discount: number;
+}
+
+export interface UpdateInvoiceRequest {
+  customer: {
+    fullname: string;
+    email: string;
+    mobileNumber?: string | null;
+    address?: string | null;
+  };
+  invoiceDate: string;
+  dueDate: string;
+  currency: Currency;
+  description?: string | null;
+  status: InvoiceDbStatus;
   item: {
     name: string;
     quantity: number;
