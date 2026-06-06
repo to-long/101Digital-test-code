@@ -92,17 +92,36 @@ async function main() {
     rate: '1000.00',
   });
 
-  // Generate 35 additional invoices
-  const statuses = ['Draft', 'Pending', 'Paid'] as const;
+  // Generate 99 additional invoices (total 100 → 10 pages × 10 rows)
+  // Distribute statuses so every filter has plenty of results:
+  //   - ~40% Pending (some past-due → Overdue), ~30% Paid, ~30% Draft
   const currencies = ['AUD', 'USD', 'GBP'] as const;
   const taxRates = [0, 5, 10, 15];
 
-  for (let i = 1; i <= 35; i++) {
+  function pickStatus(i: number): 'Draft' | 'Pending' | 'Paid' {
+    const m = i % 10;
+    if (m < 3) return 'Draft'; // 30%
+    if (m < 7) return 'Pending'; // 40%
+    return 'Paid'; // 30%
+  }
+
+  const TOTAL_GENERATED = 99;
+  for (let i = 1; i <= TOTAL_GENERATED; i++) {
     const customer = randomChoice(CUSTOMERS);
     const currency = randomChoice([...currencies]);
-    const status = randomChoice([...statuses]);
-    const invoiceDate = randomDate(new Date('2025-12-01'), new Date('2026-06-05'));
-    const dueDays = randomInt(15, 60);
+    const status = pickStatus(i);
+
+    // Wider date spread — Jan 2025 through Jun 2026 — so date range filter is meaningful.
+    const invoiceDate = randomDate(new Date('2025-01-01'), new Date('2026-06-05'));
+
+    // Mix due-date offsets. For Pending invoices, ~40% are intentionally past-due
+    // (negative offset) so the Overdue filter has results too.
+    let dueDays: number;
+    if (status === 'Pending' && Math.random() < 0.4) {
+      dueDays = randomInt(-90, -1); // past due → Overdue
+    } else {
+      dueDays = randomInt(15, 60);
+    }
     const dueDate = new Date(invoiceDate);
     dueDate.setDate(dueDate.getDate() + dueDays);
     const dueDateStr = dueDate.toISOString().split('T')[0];
@@ -115,7 +134,12 @@ async function main() {
     const subTotal = quantity * rate;
     const taxAmount = subTotal * (taxPercent / 100);
     const totalAmount = subTotal + taxAmount - discount;
-    const totalPaid = status === 'Paid' ? totalAmount : status === 'Pending' ? randomInt(0, Math.floor(totalAmount * 0.8)) : 0;
+    const totalPaid =
+      status === 'Paid'
+        ? totalAmount
+        : status === 'Pending'
+          ? randomInt(0, Math.floor(totalAmount * 0.8))
+          : 0;
     const balanceAmount = totalAmount - totalPaid;
 
     const invNum = `INV-${String(i).padStart(3, '0')}`;
@@ -129,7 +153,8 @@ async function main() {
         dueDate: dueDateStr,
         currency,
         currencySymbol: CURRENCY_SYMBOLS[currency],
-        description: Math.random() > 0.3 ? `Invoice for ${randomChoice(ITEMS)}` : undefined,
+        description:
+          Math.random() > 0.3 ? `Invoice for ${randomChoice(ITEMS)}` : undefined,
         status,
         customerName: customer.fullname,
         customerEmail: customer.email,
@@ -153,7 +178,7 @@ async function main() {
     });
   }
 
-  console.log('Seeded 36 invoices (1 mock + 35 generated)');
+  console.log(`Seeded ${TOTAL_GENERATED + 1} invoices (1 fixed mock + ${TOTAL_GENERATED} generated)`);
   console.log('Default login: admin@simpleinvoice.com / password123');
 
   await client.end();
