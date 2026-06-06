@@ -1,0 +1,16 @@
+{
+  "login.welcome": "欢迎回来",
+  "login.subtitle": "登录以管理您的发票",
+  "login.email": "邮箱",
+  "login.password": "密码",
+  "login.emailPlaceholder": "you@company.com",
+  "login.rememberMe": "记住我",
+  "login.forgotPassword": "忘记密码?",
+  "login.signIn": "登录",
+  "login.signingIn": "登录中...",
+  "login.noAccount": "还没有账户?",
+  "login.createOne": "立即创建",
+  "login.toast.success": "欢迎回来!",
+  "login.toast.error": "登录信息无效",
+  "login.toast.errorHint": "请检查您的邮箱和密码。"
+}

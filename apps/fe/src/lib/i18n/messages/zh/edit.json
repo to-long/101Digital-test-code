@@ -1,0 +1,7 @@
+{
+  "edit.title": "编辑发票",
+  "edit.subtitle": "在下方更新发票详情。保存时总金额将由服务器重新计算。",
+  "edit.toast.success": "已更新发票",
+  "edit.toast.successDesc": "{number} 已成功保存。",
+  "edit.toast.error": "更新发票失败"
+}

@@ -1,7 +1,7 @@
 {
   "detail.title": "Invoice Detail",
   "detail.subtitle": "Issued {issued} · Due {due} · {status}",
-  "detail.editInvoice": "Edit Invoice",
+  "detail.editInvoice": "Edit",
   "detail.invoice": "INVOICE",
   "detail.issued": "Issued",
   "detail.due": "Due",

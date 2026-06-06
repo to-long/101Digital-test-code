@@ -1,0 +1,14 @@
+{
+  "common.cancel": "取消",
+  "common.save": "保存",
+  "common.saving": "保存中...",
+  "common.update": "更新",
+  "common.updating": "更新中...",
+  "common.clear": "清除",
+  "common.apply": "应用",
+  "common.print": "打印",
+  "common.search": "搜索",
+  "common.actions": "操作",
+  "common.loading": "加载中...",
+  "common.required": "必填"
+}

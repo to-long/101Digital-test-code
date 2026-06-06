@@ -23,5 +23,18 @@
   "form.draftNotice": "Hoá đơn sẽ được lưu dưới dạng Nháp",
   "form.draftNoticeBody": "Bạn có thể xem lại và cập nhật hoá đơn trước khi gửi cho khách. Tổng tiền sẽ được server tính toán.",
   "form.editNotice": "Bạn đang chỉnh sửa hoá đơn hiện có",
-  "form.editNoticeBody": "Thay đổi trạng thái sẽ có hiệu lực ngay khi lưu. Nếu trạng thái được đặt là Đã thanh toán, hoá đơn sẽ không thể chỉnh sửa nữa."
+  "form.editNoticeBody": "Thay đổi trạng thái sẽ có hiệu lực ngay khi lưu. Nếu trạng thái được đặt là Đã thanh toán, hoá đơn sẽ không thể chỉnh sửa nữa.",
+  "form.error.customerNameRequired": "Bắt buộc nhập tên khách hàng",
+  "form.error.emailRequired": "Email không hợp lệ",
+  "form.error.invoiceNumberRequired": "Bắt buộc nhập số hoá đơn",
+  "form.error.invoiceDateRequired": "Bắt buộc nhập ngày hoá đơn",
+  "form.error.dueDateRequired": "Bắt buộc nhập hạn thanh toán",
+  "form.error.itemNameRequired": "Bắt buộc nhập tên sản phẩm",
+  "form.error.quantityInteger": "Số lượng phải là số nguyên",
+  "form.error.quantityPositive": "Số lượng phải lớn hơn 0",
+  "form.error.ratePositive": "Đơn giá phải lớn hơn 0",
+  "form.error.taxNegative": "Thuế không thể âm",
+  "form.error.discountNegative": "Giảm giá không thể âm",
+  "form.error.dueAfterInvoice": "Hạn thanh toán phải sau hoặc bằng ngày hoá đơn",
+  "form.error.fallback": "Giá trị không hợp lệ"
 }

@@ -1,0 +1,8 @@
+{
+  "user.theme": "主题",
+  "user.theme.light": "浅色",
+  "user.theme.dark": "深色",
+  "user.theme.system": "系统",
+  "user.language": "语言",
+  "user.logout": "退出登录"
+}

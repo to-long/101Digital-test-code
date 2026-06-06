@@ -2,9 +2,9 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { IntlProvider } from 'react-intl';
 import { catalogs } from './messages';
 
-export type Locale = 'en' | 'vi';
+export type Locale = 'en' | 'vi' | 'zh';
 
-const LOCALES: Locale[] = ['en', 'vi'];
+const LOCALES: Locale[] = ['en', 'vi', 'zh'];
 const STORAGE_KEY = 'lang';
 
 interface LocaleContextValue {
@@ -21,6 +21,7 @@ function getInitialLocale(): Locale {
   // Auto-detect from browser
   const browser = navigator.language.toLowerCase();
   if (browser.startsWith('vi')) return 'vi';
+  if (browser.startsWith('zh')) return 'zh';
   return 'en';
 }
 

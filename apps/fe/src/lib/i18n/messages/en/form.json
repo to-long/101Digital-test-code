@@ -23,5 +23,18 @@
   "form.draftNotice": "Invoice will be saved as Draft",
   "form.draftNoticeBody": "You can review and update the invoice before sending it to your customer. The total amount will be calculated by the server.",
   "form.editNotice": "You are editing an existing invoice",
-  "form.editNoticeBody": "Changing the status will take effect immediately after saving. If status is set to Paid, the invoice can no longer be modified."
+  "form.editNoticeBody": "Changing the status will take effect immediately after saving. If status is set to Paid, the invoice can no longer be modified.",
+  "form.error.customerNameRequired": "Customer name is required",
+  "form.error.emailRequired": "Valid email is required",
+  "form.error.invoiceNumberRequired": "Invoice number is required",
+  "form.error.invoiceDateRequired": "Invoice date is required",
+  "form.error.dueDateRequired": "Due date is required",
+  "form.error.itemNameRequired": "Item name is required",
+  "form.error.quantityInteger": "Quantity must be an integer",
+  "form.error.quantityPositive": "Quantity must be positive",
+  "form.error.ratePositive": "Rate must be positive",
+  "form.error.taxNegative": "Tax cannot be negative",
+  "form.error.discountNegative": "Discount cannot be negative",
+  "form.error.dueAfterInvoice": "Due date must be on or after invoice date",
+  "form.error.fallback": "Invalid value"
 }

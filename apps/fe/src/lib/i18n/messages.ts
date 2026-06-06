@@ -26,6 +26,11 @@ const viModules = import.meta.glob('./messages/vi/*.json', {
   import: 'default',
 }) as Record<string, Catalog>;
 
+const zhModules = import.meta.glob('./messages/zh/*.json', {
+  eager: true,
+  import: 'default',
+}) as Record<string, Catalog>;
+
 function merge(modules: Record<string, Catalog>): Catalog {
   return Object.values(modules).reduce<Catalog>(
     (acc, mod) => Object.assign(acc, mod),
@@ -35,6 +40,7 @@ function merge(modules: Record<string, Catalog>): Catalog {
 
 export const en: Catalog = merge(enModules);
 export const vi: Catalog = merge(viModules);
+export const zh: Catalog = merge(zhModules);
 
 /**
  * The canonical key set is derived from English at runtime. For compile-time
@@ -44,4 +50,4 @@ export const vi: Catalog = merge(viModules);
 export type MessageKey = string;
 export type Messages = Catalog;
 
-export const catalogs: Record<string, Messages> = { en, vi };
+export const catalogs: Record<string, Messages> = { en, vi, zh };

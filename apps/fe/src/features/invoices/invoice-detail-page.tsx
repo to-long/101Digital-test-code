@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { useInvoice } from '@/lib/swr';
 import { formatDate, formatCurrency } from '@/lib/format';
 import InvoiceStatusBadge from './components/invoice-status-badge';
@@ -8,6 +9,7 @@ import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const intl = useIntl();
 
   const { data: inv, isLoading, error } = useInvoice(id);
 
@@ -23,12 +25,14 @@ export default function InvoiceDetailPage() {
   if (error || !inv) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Invoice not found</p>
+        <p className="text-gray-500">
+          <FormattedMessage id="detail.notFound" />
+        </p>
         <button
-          className="text-blue-500 hover:underline text-sm mt-2"
+          className="text-blue-500 hover:underline text-sm mt-2 cursor-pointer"
           onClick={() => navigate('/')}
         >
-          Back to invoices
+          <FormattedMessage id="detail.backToInvoices" />
         </button>
       </div>
     );
@@ -38,37 +42,62 @@ export default function InvoiceDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* TOP BAR */}
-      <div className="flex justify-between items-center gap-3">
-        <div className="flex items-center gap-3">
+      {/* TOP BAR — sticky directly below the app header.
+       * <main> has p-4 sm:p-8 padding, so a plain `top: 0` sticky only
+       * reaches main's CONTENT edge (below padding) — a 16/32px strip of
+       * padding above it lets card content show through while scrolling.
+       * Using `-top-4 sm:-top-8` (negative top matching main's padding)
+       * pulls the sticky stop point all the way up to main's BORDER edge,
+       * so the bar sits flush against the breadcrumb header with no gap.
+       * `-mx`/`-mt` extend the white background full-bleed; `px`/`py` keep
+       * the content properly inset. */}
+      <div className="sticky -top-3 sm:-top-4 z-20 -mx-4 sm:-mx-8 -mt-3 sm:-mt-4 px-4 sm:px-8 py-2 bg-white border-b border-gray-100 flex justify-between items-center gap-3">
+        <div className="flex items-center gap-2 min-w-0">
           <button
             onClick={() => navigate('/')}
-            className="h-9 w-9 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
+            aria-label="Back"
+            className="h-8 w-8 shrink-0 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" />
           </button>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold">Invoice Detail</h1>
-            <p className="hidden md:block text-[13px] text-gray-500">
-              Issued {formatDate(inv.invoiceDate)} &middot; Due {formatDate(inv.dueDate)} &middot; {inv.status}
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base font-semibold truncate">
+              <FormattedMessage id="detail.title" />
+            </h1>
+            <p className="hidden lg:block text-[11px] text-gray-500 truncate">
+              <FormattedMessage
+                id="detail.subtitle"
+                values={{
+                  issued: formatDate(inv.invoiceDate),
+                  due: formatDate(inv.dueDate),
+                  status: intl.formatMessage({
+                    id: `status.${inv.status}`,
+                    defaultMessage: inv.status,
+                  }),
+                }}
+              />
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => window.print()}
-            className="rounded-full border border-gray-200 bg-white px-4 py-2.5 flex items-center gap-2 hover:bg-gray-50 transition-colors cursor-pointer"
+            className="rounded-full border border-gray-200 bg-white px-3 py-1.5 flex items-center gap-1.5 hover:bg-gray-50 transition-colors cursor-pointer"
           >
-            <Printer className="h-4 w-4" />
-            <span className="text-sm font-medium">Print</span>
+            <Printer className="h-3.5 w-3.5" />
+            <span className="text-[13px] font-medium">
+              <FormattedMessage id="common.print" />
+            </span>
           </button>
           {inv.status !== 'Paid' && (
             <button
               onClick={() => navigate(`/invoices/${id}/edit`)}
-              className="rounded-full bg-blue-500 text-white px-[18px] py-2.5 flex items-center gap-2 hover:bg-blue-600 transition-colors cursor-pointer"
+              className="rounded-full bg-blue-500 text-white px-3.5 py-1.5 flex items-center gap-1.5 hover:bg-blue-600 transition-colors cursor-pointer"
             >
-              <Pencil className="h-4 w-4" />
-              <span className="text-sm font-semibold">Edit Invoice</span>
+              <Pencil className="h-3.5 w-3.5" />
+              <span className="text-[13px] font-semibold">
+                <FormattedMessage id="detail.editInvoice" />
+              </span>
             </button>
           )}
         </div>
@@ -79,18 +108,24 @@ export default function InvoiceDetailPage() {
         {/* a. INVOICE HEADER */}
         <div className="flex justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-500 tracking-[1.5px]">INVOICE</p>
+            <p className="text-xs font-medium text-gray-500 tracking-[1.5px]">
+              <FormattedMessage id="detail.invoice" />
+            </p>
             <p className="text-[32px] font-semibold leading-tight mt-1">{inv.invoiceNumber}</p>
           </div>
           <div className="text-right">
             <InvoiceStatusBadge status={inv.status as InvoiceDisplayStatus} />
             <div className="flex gap-6 mt-3">
               <div>
-                <p className="text-xs text-gray-500 tracking-wide">Issued</p>
+                <p className="text-xs text-gray-500 tracking-wide">
+                  <FormattedMessage id="detail.issued" />
+                </p>
                 <p className="text-sm font-medium mt-0.5">{formatDate(inv.invoiceDate)}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 tracking-wide">Due</p>
+                <p className="text-xs text-gray-500 tracking-wide">
+                  <FormattedMessage id="detail.due" />
+                </p>
                 <p className="text-sm font-medium mt-0.5">{formatDate(inv.dueDate)}</p>
               </div>
             </div>
@@ -100,12 +135,16 @@ export default function InvoiceDetailPage() {
         {/* b. PARTIES */}
         <div className="flex flex-col sm:flex-row gap-8">
           <div className="flex-1">
-            <p className="text-[11px] font-medium text-gray-500 tracking-[1.5px]">FROM</p>
+            <p className="text-[11px] font-medium text-gray-500 tracking-[1.5px]">
+              <FormattedMessage id="detail.from" />
+            </p>
             <p className="text-[15px] font-semibold mt-2">SimpleInvoice</p>
             <p className="text-[13px] text-gray-500 mt-0.5">admin@simpleinvoice.com</p>
           </div>
           <div className="flex-1">
-            <p className="text-[11px] font-medium text-gray-500 tracking-[1.5px]">BILL TO</p>
+            <p className="text-[11px] font-medium text-gray-500 tracking-[1.5px]">
+              <FormattedMessage id="detail.billTo" />
+            </p>
             <p className="text-[15px] font-semibold mt-2">{inv.customer.fullname}</p>
             <p className="text-[13px] text-gray-500 mt-0.5">{inv.customer.email}</p>
             {inv.customer.mobileNumber && (
@@ -121,10 +160,18 @@ export default function InvoiceDetailPage() {
         <div className="rounded-sm border border-gray-200">
           {/* Header */}
           <div className="flex bg-[#F7F8FA] px-5 py-3.5">
-            <div className="flex-1 text-xs font-medium text-gray-500 tracking-wide">DESCRIPTION</div>
-            <div className="w-20 text-right text-xs font-medium text-gray-500 tracking-wide">QTY</div>
-            <div className="w-[140px] text-right text-xs font-medium text-gray-500 tracking-wide">RATE</div>
-            <div className="w-[140px] text-right text-xs font-medium text-gray-500 tracking-wide">AMOUNT</div>
+            <div className="flex-1 text-xs font-medium text-gray-500 tracking-wide">
+              <FormattedMessage id="detail.description" />
+            </div>
+            <div className="w-20 text-right text-xs font-medium text-gray-500 tracking-wide">
+              <FormattedMessage id="detail.qty" />
+            </div>
+            <div className="w-[140px] text-right text-xs font-medium text-gray-500 tracking-wide">
+              <FormattedMessage id="detail.rate" />
+            </div>
+            <div className="w-[140px] text-right text-xs font-medium text-gray-500 tracking-wide">
+              <FormattedMessage id="detail.amount" />
+            </div>
           </div>
           {/* Rows */}
           {inv.items.map((item) => (
@@ -140,40 +187,54 @@ export default function InvoiceDetailPage() {
         </div>
 
         {/* d. BOTTOM SECTION */}
-        <div className="flex flex-col md:flex-row gap-8 justify-between">
+        <div className="flex flex-col lg:flex-row gap-8 justify-between">
           {/* Notes */}
           <div className="flex-1">
-            <p className="text-[11px] font-medium text-gray-500 tracking-[1.5px]">NOTES</p>
+            <p className="text-[11px] font-medium text-gray-500 tracking-[1.5px]">
+              <FormattedMessage id="detail.notes" />
+            </p>
             <p className="text-[13px] text-gray-500 leading-relaxed mt-2">
-              {inv.description || 'No notes.'}
+              {inv.description || intl.formatMessage({ id: 'detail.noNotes' })}
             </p>
           </div>
 
           {/* Financial Summary */}
-          <div className="w-full md:w-[380px] flex flex-col gap-2.5">
+          <div className="w-full lg:w-[380px] flex flex-col gap-2.5">
             <div className="flex justify-between">
-              <span className="text-[13px] text-gray-500">Subtotal</span>
+              <span className="text-[13px] text-gray-500">
+                <FormattedMessage id="detail.subtotal" />
+              </span>
               <span className="text-[13px] font-medium">{formatCurrency(inv.invoiceSubTotal, sym)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[13px] text-gray-500">Tax</span>
+              <span className="text-[13px] text-gray-500">
+                <FormattedMessage id="detail.tax" />
+              </span>
               <span className="text-[13px] font-medium">{formatCurrency(inv.totalTax, sym)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[13px] text-gray-500">Discount</span>
+              <span className="text-[13px] text-gray-500">
+                <FormattedMessage id="detail.discount" />
+              </span>
               <span className="text-[13px] font-medium">&minus; {formatCurrency(inv.totalDiscount, sym)}</span>
             </div>
             <div className="h-px bg-gray-200" />
             <div className="flex justify-between">
-              <span className="text-lg font-semibold">Total</span>
+              <span className="text-lg font-semibold">
+                <FormattedMessage id="detail.total" />
+              </span>
               <span className="text-lg font-semibold">{formatCurrency(inv.totalAmount, sym)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[13px] text-green-600">Paid</span>
+              <span className="text-[13px] text-green-600">
+                <FormattedMessage id="detail.paid" />
+              </span>
               <span className="text-[13px] text-green-600">{formatCurrency(inv.totalPaid, sym)}</span>
             </div>
             <div className="rounded-sm bg-blue-50 border border-blue-500 px-4 py-3.5 flex justify-between">
-              <span className="text-[13px] font-semibold">Outstanding balance</span>
+              <span className="text-[13px] font-semibold">
+                <FormattedMessage id="detail.outstanding" />
+              </span>
               <span className="text-lg font-semibold text-blue-500">{formatCurrency(inv.balanceAmount, sym)}</span>
             </div>
           </div>

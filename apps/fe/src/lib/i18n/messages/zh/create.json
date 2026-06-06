@@ -1,0 +1,7 @@
+{
+  "create.title": "新建发票",
+  "create.subtitle": "新发票将保存为草稿。总金额由服务器计算。",
+  "create.toast.success": "已创建发票",
+  "create.toast.successDesc": "{number} 已保存为草稿。",
+  "create.toast.error": "创建发票失败"
+}

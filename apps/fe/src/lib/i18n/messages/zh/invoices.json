@@ -1,0 +1,23 @@
+{
+  "invoices.title": "发票",
+  "invoices.subtitle": "管理和跟踪所有客户发票",
+  "invoices.newInvoice": "新建发票",
+  "invoices.searchPlaceholder": "按发票编号或客户名称搜索…",
+  "invoices.allStatuses": "全部状态",
+  "invoices.allTime": "全部时间",
+  "invoices.from": "自 {date}",
+  "invoices.until": "至 {date}",
+  "invoices.dateRange.preset.today": "今天",
+  "invoices.dateRange.preset.last7": "近7天",
+  "invoices.dateRange.preset.last30": "近30天",
+  "invoices.dateRange.preset.thisMonth": "本月",
+  "invoices.dateRange.preset.lastMonth": "上月",
+  "invoices.column.invoiceNumber": "发票号",
+  "invoices.column.customer": "客户",
+  "invoices.column.invoiceDate": "开票日期",
+  "invoices.column.dueDate": "到期日期",
+  "invoices.column.total": "总额",
+  "invoices.column.status": "状态",
+  "invoices.empty": "未找到发票",
+  "invoices.pagination.showing": "显示 {from}–{to} 共 {total} 张发票"
+}

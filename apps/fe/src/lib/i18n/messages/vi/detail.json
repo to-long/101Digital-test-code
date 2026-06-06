@@ -1,7 +1,7 @@
 {
   "detail.title": "Chi tiết hoá đơn",
   "detail.subtitle": "Phát hành {issued} · Hạn {due} · {status}",
-  "detail.editInvoice": "Sửa hoá đơn",
+  "detail.editInvoice": "Sửa",
   "detail.invoice": "HOÁ ĐƠN",
   "detail.issued": "Phát hành",
   "detail.due": "Hạn",
