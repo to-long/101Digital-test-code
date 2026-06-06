@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl } from 'react-intl';
 import { useAuthStore } from '@/lib/auth';
 import { api } from '@/lib/api';
 import { FileText } from 'lucide-react';
+import SettingsDropdown from '@/features/layout/settings-dropdown';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -12,7 +13,6 @@ export default function LoginPage() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -33,8 +33,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-[440px] rounded-xl shadow-sm shadow-lg border border-gray-200 bg-white p-12">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Guest header — gives unauthenticated visitors a way to switch
+          theme/language before signing in. Mirrors the chrome they'll see
+          inside the user dropdown once they log in. */}
+      <header className="flex justify-end items-center px-4 sm:px-8 h-12 shrink-0">
+        <SettingsDropdown />
+      </header>
+
+      <main className="flex-1 flex items-center justify-center px-4 pb-12">
+        <div className="w-full max-w-[440px] rounded-xl shadow-sm shadow-lg border border-gray-200 bg-white p-12">
         <div className="flex flex-col gap-8">
           {/* Brand */}
           <div className="flex items-center justify-center gap-2">
@@ -88,27 +96,6 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Options row */}
-            <div className="flex justify-between items-center">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                  className="w-[18px] h-[18px] border border-gray-300 rounded-sm accent-blue-500"
-                />
-                <span className="text-[13px] text-gray-500">
-                  <FormattedMessage id="login.rememberMe" />
-                </span>
-              </label>
-              <button
-                type="button"
-                className="text-[13px] text-blue-500 font-medium hover:underline cursor-pointer"
-              >
-                <FormattedMessage id="login.forgotPassword" />
-              </button>
-            </div>
-
             {/* Sign in button */}
             <button
               type="submit"
@@ -118,21 +105,9 @@ export default function LoginPage() {
               <FormattedMessage id={loading ? 'login.signingIn' : 'login.signIn'} />
             </button>
           </form>
-
-          {/* Footer */}
-          <div className="text-center">
-            <span className="text-[13px] text-gray-500">
-              <FormattedMessage id="login.noAccount" />{' '}
-            </span>
-            <button
-              type="button"
-              className="text-[13px] text-blue-500 font-semibold hover:underline cursor-pointer"
-            >
-              <FormattedMessage id="login.createOne" />
-            </button>
-          </div>
         </div>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

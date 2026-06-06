@@ -204,10 +204,13 @@ export default function InvoicesPage() {
   }
 
   function SortIcon({ field }: { field: string }) {
-    if (sortBy !== field) return <ChevronsUpDown className="h-4 w-4 text-gray-400" />;
+    // ChevronsUpDown visually reads heavier than single Up/Down at the same
+    // box size (two stacked arrows vs one). Use 3.5 across all three so they
+    // appear visually consistent in the column header.
+    if (sortBy !== field) return <ChevronsUpDown className="h-3.5 w-3.5 text-gray-400 shrink-0" />;
     return ordering === 'ASC'
-      ? <ChevronUp className="h-4 w-4 text-blue-500" />
-      : <ChevronDown className="h-4 w-4 text-blue-500" />;
+      ? <ChevronUp className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+      : <ChevronDown className="h-3.5 w-3.5 text-blue-500 shrink-0" />;
   }
 
   const totalPages = data ? Math.ceil(data.paging.total / pageSize) : 0;
@@ -230,22 +233,22 @@ export default function InvoicesPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] sm:h-[calc(100vh-8rem)]">
+    <div className="flex flex-col h-[calc(100vh-4.5rem)] sm:h-[calc(100vh-5rem)]">
       {/* TOP SECTION */}
-      <div className="flex justify-between items-center mb-5 shrink-0">
-        <div>
-          <h1 className="text-[32px] font-semibold leading-tight">
+      <div className="flex justify-between items-center mb-3 shrink-0 gap-3">
+        <div className="min-w-0">
+          <h1 className="text-lg sm:text-xl font-semibold leading-tight truncate">
             <FormattedMessage id="invoices.title" />
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="hidden md:block text-[12px] text-gray-500 mt-0.5 truncate">
             <FormattedMessage id="invoices.subtitle" />
           </p>
         </div>
         <Link
           to="/invoices/new"
-          className="bg-blue-500 text-white rounded-full px-[18px] py-2.5 text-sm font-semibold shadow flex items-center gap-2 hover:bg-blue-600 transition-colors"
+          className="bg-blue-500 text-white rounded-full px-3.5 py-1.5 text-[13px] font-semibold shadow-sm flex items-center gap-1.5 hover:bg-blue-600 transition-colors shrink-0"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-3.5 w-3.5" />
           <FormattedMessage id="invoices.newInvoice" />
         </Link>
       </div>
@@ -454,7 +457,12 @@ export default function InvoicesPage() {
                   {/* z-10: above other body cells (horizontal sticky),
                       below thead (which is z-20 / z-30). */}
                   <td className="px-[18px] sticky left-0 z-10 bg-white group-hover:bg-gray-50 transition-colors">
-                    <span className="text-[13px] font-semibold">{inv.invoiceNumber}</span>
+                    <Link
+                      to={`/invoices/${inv.invoiceId}`}
+                      className="text-[13px] font-semibold text-gray-900 hover:text-blue-600 hover:underline cursor-pointer"
+                    >
+                      {inv.invoiceNumber}
+                    </Link>
                   </td>
                   <td className="px-[18px]">
                     <div className="flex flex-col">
@@ -489,13 +497,17 @@ export default function InvoicesPage() {
                       >
                         <Eye className="h-4 w-4" />
                       </Link>
-                      <Link
-                        to={`/invoices/${inv.invoiceId}/edit`}
-                        className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Link>
+                      {/* Paid invoices are immutable on the server; hide the
+                          edit affordance to match the detail page behaviour. */}
+                      {inv.status !== 'Paid' && (
+                        <Link
+                          to={`/invoices/${inv.invoiceId}/edit`}
+                          className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Link>
+                      )}
                     </div>
                   </td>
                 </tr>

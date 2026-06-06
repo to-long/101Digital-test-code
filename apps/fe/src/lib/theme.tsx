@@ -1,4 +1,13 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -38,15 +47,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() =>
     resolveTheme(getInitialTheme()),
   );
+  const transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Apply theme on mount and whenever it changes.
-  useEffect(() => {
+  // useLayoutEffect runs synchronously BEFORE the browser paints — applying
+  // the .dark class here avoids the brief flash that useEffect causes
+  // (state-update → paint → effect → re-paint with new class).
+  useLayoutEffect(() => {
     applyTheme(theme);
     setResolvedTheme(resolveTheme(theme));
     localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 
-  // When using 'system', respond to OS-level changes.
+  // Respond to OS-level scheme changes when on 'system'.
   useEffect(() => {
     if (theme !== 'system') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -58,8 +70,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => mq.removeEventListener('change', onChange);
   }, [theme]);
 
+  /**
+   * Brief opt-in transition window. Setting `.theme-switching` on <html> lets
+   * the bg/border/color CSS rules animate for 200ms; then the class is
+   * removed so subsequent interactions (hover, focus, etc.) repaint instantly
+   * — no all-elements-transitioning-at-once flicker.
+   */
+  const setTheme = useCallback((next: Theme) => {
+    document.documentElement.classList.add('theme-switching');
+    if (transitionTimer.current) clearTimeout(transitionTimer.current);
+    transitionTimer.current = setTimeout(() => {
+      document.documentElement.classList.remove('theme-switching');
+    }, 220);
+    setThemeState(next);
+  }, []);
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme: setThemeState, resolvedTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
       {children}
     </ThemeContext.Provider>
   );

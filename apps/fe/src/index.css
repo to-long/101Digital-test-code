@@ -54,7 +54,10 @@
   --color-text: #f3f4f6;
   --color-text-muted: #9ca3af;
   --color-text-subtle: #6b7280;
-  --color-border-soft: #374151;
+  /* Was #374151 — read too bright as panel borders and dividers on dark
+   * surfaces. #2a3447 keeps borders visible but no longer feels like a
+   * glowing edge. */
+  --color-border-soft: #2a3447;
 }
 
 @layer base {
@@ -69,11 +72,20 @@
     font-family: system-ui, -apple-system, sans-serif;
   }
 
-  /* Smooth color transitions when switching themes */
-  body,
-  body * {
-    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
-  }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+ * THEME TRANSITION
+ *
+ * Transitions on `body *` flicker badly on every theme flip (every node
+ * animates its bg/border/text at once). Instead, briefly opt into a global
+ * transition ONLY while the `.theme-switching` class is on <html> — set by
+ * the ThemeProvider when the user picks a new theme and removed ~200ms
+ * later. Outside this window all interactions paint instantly.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.theme-switching,
+.theme-switching * {
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, fill 150ms ease !important;
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
@@ -90,6 +102,9 @@
 .dark .bg-gray-50\/50 { background-color: #1a2233 !important; }
 .dark .bg-gray-100 { background-color: #2a3447 !important; }
 .dark .bg-gray-100\/80 { background-color: rgba(42, 52, 71, 0.8) !important; }
+/* Used as divider lines (h-px bg-gray-200). Default #e5e7eb reads as a
+ * bright glowing line on dark surfaces — drop it to match the soft border. */
+.dark .bg-gray-200 { background-color: #2a3447 !important; }
 .dark .bg-\[\#F7F8FA\] { background-color: var(--color-surface-muted) !important; }
 .dark .bg-\[\#FAFAFA\] { background-color: #1a2233 !important; }
 .dark .bg-\[\#F5F5F5\] { background-color: #2a3447 !important; }

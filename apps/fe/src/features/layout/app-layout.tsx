@@ -23,7 +23,7 @@ export default function AppLayout() {
 
       <div className="flex flex-1 flex-col min-w-0">
         {/* Top nav bar (sticky) */}
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b bg-white px-4 sm:px-8">
+        <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between border-b border-gray-100 bg-white px-4 sm:px-8">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Home className="h-4 w-4" />
@@ -38,7 +38,7 @@ export default function AppLayout() {
         </header>
 
         {/* Content area */}
-        <main className="flex-1 overflow-y-auto bg-[#F7F8FA] p-4 sm:p-8">
+        <main className="flex-1 overflow-y-auto bg-[#F7F8FA] px-4 sm:px-8 py-3 sm:py-4">
           <Outlet />
         </main>
       </div>
