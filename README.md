@@ -2,7 +2,49 @@
 
 Full-stack invoice management application built for the **101 Digital Web Engineer Assessment v2.3.1**.
 
-A polished invoice CRUD app with auth, search/filter/sort/pagination, dark mode, and i18n (English / Tiếng Việt / 中文).
+A polished invoice CRUD app with auth, search/filter/sort/pagination, soft delete with recycle bin, dark mode, and i18n (English / Tiếng Việt / 中文).
+
+---
+
+## 🚀 Quick start
+
+**Prerequisites**: [Bun](https://bun.sh) ≥ 1.0 + [Docker](https://docs.docker.com/get-docker/).
+
+```bash
+cp .env.example .env
+
+make setup    # installs deps, starts DB, runs migrations, seeds 100 invoices
+make dev      # starts BE :4001 + FE :3041 with hot reload
+```
+
+Open **<http://localhost:3041>** and sign in:
+
+| Email | Password |
+|-------|----------|
+| `admin@simpleinvoice.com` | `password123` |
+
+That's it. The seed populates 100 invoices over 18 months across 3 currencies and 4 statuses (Draft / Pending / Paid / Overdue) so every filter has data.
+
+### Common things you might want next
+
+| Want to… | Run |
+|----------|-----|
+| Open Swagger docs | <http://localhost:4001/api/docs> |
+| Run all backend tests | `make test` |
+| Run frontend E2E suite | `make test-e2e` |
+| Regenerate README screenshots | `bun run scripts/screenshots.ts` |
+| Reseed the DB | `make seed` |
+| Lint / format | `make lint` / `make format` |
+
+### Running with Docker (no local Bun/Postgres needed)
+
+```bash
+docker compose up --build
+docker compose exec backend bun run apps/be/src/db/migrate.ts
+docker compose exec backend bun run apps/be/src/db/seed.ts
+```
+
+App is still at <http://localhost:3041>.
 
 ---
 
@@ -331,48 +373,6 @@ simple-invoice/
 ├── Makefile
 └── README.md
 ```
-
-## Prerequisites
-
-- [Bun](https://bun.sh) ≥ 1.0
-- [Docker](https://docs.docker.com/get-docker/) & Docker Compose
-
-## Quick start (local development)
-
-```bash
-# Clone & install
-git clone <repo-url> && cd simple-invoice
-cp .env.example .env
-
-# One-shot: install deps, start DB, run migrations, seed 100 invoices
-make setup
-
-# Start FE + BE concurrently (with hot reload on both)
-make dev
-```
-
-Open <http://localhost:3041> and sign in with the default credentials below.
-
-## Docker (production)
-
-```bash
-docker compose up --build
-```
-
-This starts PostgreSQL, the backend, and an nginx-served production frontend bundle. The app is available at <http://localhost:3041>.
-
-After containers are up, run migrations and seed once:
-
-```bash
-docker compose exec backend bun run apps/be/src/db/migrate.ts
-docker compose exec backend bun run apps/be/src/db/seed.ts
-```
-
-## Default credentials
-
-| Email | Password |
-|-------|----------|
-| `admin@simpleinvoice.com` | `password123` |
 
 ## API documentation
 
