@@ -1,0 +1,14 @@
+{
+  "common.cancel": "Cancel",
+  "common.save": "Save",
+  "common.saving": "Saving...",
+  "common.update": "Update",
+  "common.updating": "Updating...",
+  "common.clear": "Clear",
+  "common.apply": "Apply",
+  "common.print": "Print",
+  "common.search": "Search",
+  "common.actions": "Actions",
+  "common.loading": "Loading...",
+  "common.required": "Required"
+}

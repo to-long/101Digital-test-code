@@ -1,0 +1,6 @@
+{
+  "status.Draft": "Draft",
+  "status.Pending": "Pending",
+  "status.Paid": "Paid",
+  "status.Overdue": "Overdue"
+}

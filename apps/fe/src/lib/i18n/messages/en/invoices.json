@@ -1,0 +1,23 @@
+{
+  "invoices.title": "Invoices",
+  "invoices.subtitle": "Manage and track all customer invoices",
+  "invoices.newInvoice": "New Invoice",
+  "invoices.searchPlaceholder": "Search by invoice number or customer name…",
+  "invoices.allStatuses": "All Statuses",
+  "invoices.allTime": "All Time",
+  "invoices.from": "From {date}",
+  "invoices.until": "Until {date}",
+  "invoices.dateRange.preset.today": "Today",
+  "invoices.dateRange.preset.last7": "Last 7 days",
+  "invoices.dateRange.preset.last30": "Last 30 days",
+  "invoices.dateRange.preset.thisMonth": "This month",
+  "invoices.dateRange.preset.lastMonth": "Last month",
+  "invoices.column.invoiceNumber": "Invoice #",
+  "invoices.column.customer": "Customer",
+  "invoices.column.invoiceDate": "Invoice Date",
+  "invoices.column.dueDate": "Due Date",
+  "invoices.column.total": "Total",
+  "invoices.column.status": "Status",
+  "invoices.empty": "No invoices found",
+  "invoices.pagination.showing": "Showing {from}–{to} of {total, plural, one {# invoice} other {# invoices}}"
+}

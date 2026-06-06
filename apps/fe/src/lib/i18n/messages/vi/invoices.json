@@ -1,0 +1,23 @@
+{
+  "invoices.title": "Hoá đơn",
+  "invoices.subtitle": "Quản lý và theo dõi hoá đơn khách hàng",
+  "invoices.newInvoice": "Hoá đơn mới",
+  "invoices.searchPlaceholder": "Tìm theo số hoá đơn hoặc tên khách hàng…",
+  "invoices.allStatuses": "Tất cả trạng thái",
+  "invoices.allTime": "Tất cả thời gian",
+  "invoices.from": "Từ {date}",
+  "invoices.until": "Đến {date}",
+  "invoices.dateRange.preset.today": "Hôm nay",
+  "invoices.dateRange.preset.last7": "7 ngày qua",
+  "invoices.dateRange.preset.last30": "30 ngày qua",
+  "invoices.dateRange.preset.thisMonth": "Tháng này",
+  "invoices.dateRange.preset.lastMonth": "Tháng trước",
+  "invoices.column.invoiceNumber": "Số HĐ",
+  "invoices.column.customer": "Khách hàng",
+  "invoices.column.invoiceDate": "Ngày HĐ",
+  "invoices.column.dueDate": "Hạn thanh toán",
+  "invoices.column.total": "Tổng tiền",
+  "invoices.column.status": "Trạng thái",
+  "invoices.empty": "Không có hoá đơn nào",
+  "invoices.pagination.showing": "Hiển thị {from}–{to} trong tổng {total} hoá đơn"
+}

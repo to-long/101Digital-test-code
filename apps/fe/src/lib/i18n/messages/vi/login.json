@@ -1,0 +1,16 @@
+{
+  "login.welcome": "Chào mừng trở lại",
+  "login.subtitle": "Đăng nhập để quản lý hoá đơn",
+  "login.email": "Email",
+  "login.password": "Mật khẩu",
+  "login.emailPlaceholder": "ban@congty.com",
+  "login.rememberMe": "Ghi nhớ đăng nhập",
+  "login.forgotPassword": "Quên mật khẩu?",
+  "login.signIn": "Đăng nhập",
+  "login.signingIn": "Đang đăng nhập...",
+  "login.noAccount": "Chưa có tài khoản?",
+  "login.createOne": "Tạo mới",
+  "login.toast.success": "Chào mừng trở lại!",
+  "login.toast.error": "Thông tin đăng nhập không đúng",
+  "login.toast.errorHint": "Vui lòng kiểm tra email và mật khẩu."
+}

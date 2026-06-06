@@ -1,0 +1,7 @@
+{
+  "create.title": "Tạo hoá đơn",
+  "create.subtitle": "Hoá đơn mới sẽ được lưu dưới dạng Nháp. Tổng tiền sẽ do server tính toán.",
+  "create.toast.success": "Đã tạo hoá đơn",
+  "create.toast.successDesc": "{number} đã lưu dưới dạng Nháp.",
+  "create.toast.error": "Không thể tạo hoá đơn"
+}

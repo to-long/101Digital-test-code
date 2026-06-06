@@ -1,0 +1,7 @@
+{
+  "create.title": "Create Invoice",
+  "create.subtitle": "New invoices are saved as Draft. Total amount is calculated by the server.",
+  "create.toast.success": "Invoice created",
+  "create.toast.successDesc": "{number} saved as Draft.",
+  "create.toast.error": "Failed to create invoice"
+}

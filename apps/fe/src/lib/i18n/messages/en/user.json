@@ -1,0 +1,8 @@
+{
+  "user.theme": "Theme",
+  "user.theme.light": "Light",
+  "user.theme.dark": "Dark",
+  "user.theme.system": "System",
+  "user.language": "Language",
+  "user.logout": "Logout"
+}

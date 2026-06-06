@@ -1,0 +1,16 @@
+{
+  "login.welcome": "Welcome back",
+  "login.subtitle": "Sign in to manage your invoices",
+  "login.email": "Email",
+  "login.password": "Password",
+  "login.emailPlaceholder": "you@company.com",
+  "login.rememberMe": "Remember me",
+  "login.forgotPassword": "Forgot password?",
+  "login.signIn": "Sign in",
+  "login.signingIn": "Signing in...",
+  "login.noAccount": "Don't have an account?",
+  "login.createOne": "Create one",
+  "login.toast.success": "Welcome back!",
+  "login.toast.error": "Invalid credentials",
+  "login.toast.errorHint": "Please check your email and password."
+}

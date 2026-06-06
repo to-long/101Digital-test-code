@@ -1,0 +1,7 @@
+{
+  "edit.title": "Edit Invoice",
+  "edit.subtitle": "Update the invoice details below. Total amount is recalculated by the server on save.",
+  "edit.toast.success": "Invoice updated",
+  "edit.toast.successDesc": "{number} saved successfully.",
+  "edit.toast.error": "Failed to update invoice"
+}

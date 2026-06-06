@@ -1,0 +1,7 @@
+{
+  "edit.title": "Sửa hoá đơn",
+  "edit.subtitle": "Cập nhật thông tin hoá đơn bên dưới. Tổng tiền sẽ được server tính lại khi lưu.",
+  "edit.toast.success": "Đã cập nhật hoá đơn",
+  "edit.toast.successDesc": "{number} đã lưu thành công.",
+  "edit.toast.error": "Không thể cập nhật hoá đơn"
+}
