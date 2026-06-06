@@ -4,11 +4,7 @@
     {
       "name": "Dev (BE + FE watch)",
       "runtimeExecutable": "bun",
-      "runtimeArgs": [
-        "--cwd=/Users/long.to/Documents/PRIVATE/101Digital-test-code",
-        "run",
-        "dev"
-      ],
+      "runtimeArgs": ["--cwd=/Users/long.to/Documents/PRIVATE/101Digital-test-code", "run", "dev"],
       "port": 3041,
       "autoPort": false
     },

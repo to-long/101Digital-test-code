@@ -1,17 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FormattedMessage, useIntl } from 'react-intl';
-import {
-  ChevronUp,
-  LogOut,
-  Sun,
-  Moon,
-  Monitor,
-  Languages,
-} from 'lucide-react';
 import { useAuthStore } from '@/lib/auth';
-import { useTheme, type Theme } from '@/lib/theme';
-import { useLocale, type Locale } from '@/lib/i18n';
+import { type Locale, useLocale } from '@/lib/i18n';
+import { type Theme, useTheme } from '@/lib/theme';
+import { ChevronUp, Languages, LogOut, Monitor, Moon, Sun } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { useNavigate } from 'react-router-dom';
 
 function useClickOutside<T extends HTMLElement>(
   ref: React.RefObject<T | null>,
@@ -48,7 +41,10 @@ export default function SidebarAccountMenu({ collapsed }: { collapsed: boolean }
 
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  useClickOutside(ref, useCallback(() => setOpen(false), []));
+  useClickOutside(
+    ref,
+    useCallback(() => setOpen(false), []),
+  );
 
   if (!user) return null;
 

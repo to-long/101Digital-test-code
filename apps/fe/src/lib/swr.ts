@@ -1,12 +1,12 @@
+import type {
+  CreateInvoiceInput,
+  Invoice,
+  PaginatedResponse,
+  UpdateInvoiceInput,
+} from '@simple-invoice/shared';
 import useSWR, { mutate as globalMutate } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { api } from './api';
-import type {
-  Invoice,
-  PaginatedResponse,
-  CreateInvoiceInput,
-  UpdateInvoiceInput,
-} from '@simple-invoice/shared';
 
 // ─── Keys ────────────────────────────────────────────────────────────────────
 export function invoiceListKey(params: Record<string, string>) {
@@ -35,9 +35,7 @@ export function useInvoices(params: Record<string, string>) {
 
 // ─── Detail hook ─────────────────────────────────────────────────────────────
 export function useInvoice(id: string | undefined) {
-  return useSWR(invoiceDetailKey(id), ([, invoiceId]) =>
-    api.invoices.get(invoiceId),
-  );
+  return useSWR(invoiceDetailKey(id), ([, invoiceId]) => api.invoices.get(invoiceId));
 }
 
 // ─── Create with optimistic update ──────────────────────────────────────────
@@ -50,11 +48,9 @@ export function useCreateInvoice() {
     {
       onSuccess: () => {
         // Revalidate all invoice list caches
-        globalMutate(
-          (key) => Array.isArray(key) && key[0] === 'invoices',
-          undefined,
-          { revalidate: true },
-        );
+        globalMutate((key) => Array.isArray(key) && key[0] === 'invoices', undefined, {
+          revalidate: true,
+        });
       },
     },
   );
@@ -80,11 +76,9 @@ export function useUpdateInvoice(id: string) {
         globalMutate(invoiceDetailKey(id), updatedInvoice, { revalidate: false });
 
         // Revalidate all invoice list caches so the list reflects changes
-        globalMutate(
-          (key) => Array.isArray(key) && key[0] === 'invoices',
-          undefined,
-          { revalidate: true },
-        );
+        globalMutate((key) => Array.isArray(key) && key[0] === 'invoices', undefined, {
+          revalidate: true,
+        });
       },
     },
   );
@@ -103,11 +97,9 @@ export function useDeleteInvoice(id: string) {
         globalMutate(invoiceDetailKey(id), undefined, { revalidate: false });
         // Revalidate every list cache so the row disappears from any
         // filtered/sorted view immediately.
-        globalMutate(
-          (key) => Array.isArray(key) && key[0] === 'invoices',
-          undefined,
-          { revalidate: true },
-        );
+        globalMutate((key) => Array.isArray(key) && key[0] === 'invoices', undefined, {
+          revalidate: true,
+        });
       },
     },
   );

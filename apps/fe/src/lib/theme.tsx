@@ -1,4 +1,5 @@
 import {
+  type ReactNode,
   createContext,
   useCallback,
   useContext,
@@ -6,7 +7,6 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type ReactNode,
 } from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';

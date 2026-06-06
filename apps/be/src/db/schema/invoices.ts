@@ -1,4 +1,13 @@
-import { pgTable, pgEnum, uuid, varchar, text, date, numeric, timestamp } from 'drizzle-orm/pg-core';
+import {
+  date,
+  numeric,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
 import { users } from './users';
 
 export const invoiceStatusEnum = pgEnum('invoice_status', ['Draft', 'Pending', 'Paid']);

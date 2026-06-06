@@ -1,4 +1,6 @@
 #!/usr/bin/env bun
+import { mkdir } from 'node:fs/promises';
+import path from 'node:path';
 /**
  * Generates README screenshots for every screen × light + dark theme.
  *
@@ -10,8 +12,6 @@
  *   bun run scripts/screenshots.ts
  */
 import { chromium } from 'playwright';
-import { mkdir } from 'node:fs/promises';
-import path from 'node:path';
 
 const BASE = 'http://localhost:3041';
 const OUT_DIR = path.join(import.meta.dir, '..', 'docs', 'screenshots');
@@ -37,9 +37,9 @@ async function loginAndSeed(context: import('playwright').BrowserContext) {
   // Grab the first invoice id (for detail + edit shots).
   // Skip the "/invoices/new" link belonging to the New Invoice button —
   // pick the first link that goes to an actual invoice (matches a UUID).
-  const hrefs = await page.locator('a[href^="/invoices/"]').evaluateAll((els) =>
-    (els as HTMLAnchorElement[]).map((a) => a.getAttribute('href') ?? ''),
-  );
+  const hrefs = await page
+    .locator('a[href^="/invoices/"]')
+    .evaluateAll((els) => (els as HTMLAnchorElement[]).map((a) => a.getAttribute('href') ?? ''));
   const realHref = hrefs.find((h) => h && h !== '/invoices/new' && !h.endsWith('/edit'));
   const firstId = realHref?.replace('/invoices/', '');
   // Persist auth token, then return so dark-mode runs reuse it.

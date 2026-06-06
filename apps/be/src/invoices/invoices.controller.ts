@@ -1,24 +1,24 @@
 import {
+  Body,
   Controller,
-  Get,
-  Post,
-  Put,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
-  Body,
   Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
   Query,
   UseGuards,
-  ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { InvoicesService } from './invoices.service';
-import { CreateInvoiceDto } from './dto/create-invoice.dto';
-import { UpdateInvoiceDto } from './dto/update-invoice.dto';
-import { InvoiceQueryDto } from './dto/invoice-query.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import type { CreateInvoiceDto } from './dto/create-invoice.dto';
+import type { InvoiceQueryDto } from './dto/invoice-query.dto';
+import type { UpdateInvoiceDto } from './dto/update-invoice.dto';
+import type { InvoicesService } from './invoices.service';
 
 @ApiTags('Invoices')
 @Controller('invoices')
@@ -53,10 +53,7 @@ export class InvoicesController {
   @ApiResponse({ status: 200, description: 'Invoice updated' })
   @ApiResponse({ status: 400, description: 'Paid invoices cannot be modified' })
   @ApiResponse({ status: 404, description: 'Invoice not found' })
-  async update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateInvoiceDto,
-  ) {
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateInvoiceDto) {
     return this.invoicesService.update(id, dto);
   }
 

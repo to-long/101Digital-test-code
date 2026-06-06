@@ -1,6 +1,6 @@
-import { FormattedMessage } from 'react-intl';
 import { Badge } from '@/components/ui/badge';
 import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
+import { FormattedMessage } from 'react-intl';
 
 const statusVariant: Record<InvoiceDisplayStatus, 'muted' | 'warning' | 'success' | 'danger'> = {
   Draft: 'muted',

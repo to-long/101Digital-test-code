@@ -1,18 +1,18 @@
 import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  ConflictException,
   BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
-import { eq, and, ne, lt, or, ilike, gte, lte, asc, desc, sql, isNull } from 'drizzle-orm';
+import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
+import { and, asc, desc, eq, gte, ilike, isNull, lt, lte, ne, or, sql } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { DRIZZLE } from '../db/db.module';
 import * as schema from '../db/schema';
-import type { InvoiceQueryDto } from './dto/invoice-query.dto';
 import type { CreateInvoiceDto } from './dto/create-invoice.dto';
+import type { InvoiceQueryDto } from './dto/invoice-query.dto';
 import type { UpdateInvoiceDto } from './dto/update-invoice.dto';
-import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
 
 const CURRENCY_SYMBOLS: Record<string, string> = { AUD: 'A$', USD: '$', GBP: '£' };
 
@@ -21,8 +21,16 @@ export class InvoicesService {
   constructor(@Inject(DRIZZLE) private db: PostgresJsDatabase<typeof schema>) {}
 
   async list(query: InvoiceQueryDto) {
-    const { page = 1, pageSize = 10, sortBy, ordering = 'DESC', status, keyword, fromDate, toDate } =
-      query;
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy,
+      ordering = 'DESC',
+      status,
+      keyword,
+      fromDate,
+      toDate,
+    } = query;
 
     const conditions: ReturnType<typeof eq>[] = [];
 
@@ -199,7 +207,7 @@ export class InvoicesService {
     const subTotal = dto.item.quantity * dto.item.rate;
     const taxAmount = subTotal * (dto.taxPercent / 100);
     const totalAmount = subTotal + taxAmount - dto.discount;
-    const totalPaid = parseFloat(existing.totalPaid);
+    const totalPaid = Number.parseFloat(existing.totalPaid);
     const balanceAmount = totalAmount - totalPaid;
 
     return await this.db.transaction(async (tx) => {
@@ -225,9 +233,7 @@ export class InvoicesService {
         .where(eq(schema.invoices.invoiceId, id))
         .returning();
 
-      await tx
-        .delete(schema.invoiceItems)
-        .where(eq(schema.invoiceItems.invoiceId, id));
+      await tx.delete(schema.invoiceItems).where(eq(schema.invoiceItems.invoiceId, id));
 
       const [item] = await tx
         .insert(schema.invoiceItems)
@@ -283,14 +289,14 @@ export class InvoicesService {
         id: i.id,
         name: i.name,
         quantity: i.quantity,
-        rate: parseFloat(i.rate),
+        rate: Number.parseFloat(i.rate),
       })),
-      invoiceSubTotal: parseFloat(inv.invoiceSubTotal),
-      totalTax: parseFloat(inv.totalTax),
-      totalDiscount: parseFloat(inv.totalDiscount),
-      totalAmount: parseFloat(inv.totalAmount),
-      totalPaid: parseFloat(inv.totalPaid),
-      balanceAmount: parseFloat(inv.balanceAmount),
+      invoiceSubTotal: Number.parseFloat(inv.invoiceSubTotal),
+      totalTax: Number.parseFloat(inv.totalTax),
+      totalDiscount: Number.parseFloat(inv.totalDiscount),
+      totalAmount: Number.parseFloat(inv.totalAmount),
+      totalPaid: Number.parseFloat(inv.totalPaid),
+      balanceAmount: Number.parseFloat(inv.balanceAmount),
       createdAt: inv.createdAt.toISOString(),
     };
   }

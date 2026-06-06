@@ -1,15 +1,15 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { SWRConfig } from 'swr';
-import { Toaster } from 'sonner';
+import LoginPage from '@/features/auth/login-page';
+import CreateInvoicePage from '@/features/invoices/create-invoice-page';
+import EditInvoicePage from '@/features/invoices/edit-invoice-page';
+import InvoiceDetailPage from '@/features/invoices/invoice-detail-page';
+import InvoicesPage from '@/features/invoices/invoices-page';
+import AppLayout from '@/features/layout/app-layout';
 import { useAuthStore } from '@/lib/auth';
 import { LocaleProvider } from '@/lib/i18n';
 import { ThemeProvider } from '@/lib/theme';
-import LoginPage from '@/features/auth/login-page';
-import AppLayout from '@/features/layout/app-layout';
-import InvoicesPage from '@/features/invoices/invoices-page';
-import InvoiceDetailPage from '@/features/invoices/invoice-detail-page';
-import CreateInvoicePage from '@/features/invoices/create-invoice-page';
-import EditInvoicePage from '@/features/invoices/edit-invoice-page';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import { SWRConfig } from 'swr';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
@@ -26,42 +26,42 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <ThemeProvider>
-    <LocaleProvider>
-    <SWRConfig
-      value={{
-        revalidateOnFocus: false,
-        errorRetryCount: 1,
-        dedupingInterval: 2000,
-      }}
-    >
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              <GuestRoute>
-                <LoginPage />
-              </GuestRoute>
-            }
-          />
-          <Route
-            element={
-              <ProtectedRoute>
-                <AppLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/" element={<InvoicesPage />} />
-            <Route path="/invoices/new" element={<CreateInvoicePage />} />
-            <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
-            <Route path="/invoices/:id/edit" element={<EditInvoicePage />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-      <Toaster position="bottom-right" richColors closeButton />
-    </SWRConfig>
-    </LocaleProvider>
+      <LocaleProvider>
+        <SWRConfig
+          value={{
+            revalidateOnFocus: false,
+            errorRetryCount: 1,
+            dedupingInterval: 2000,
+          }}
+        >
+          <BrowserRouter>
+            <Routes>
+              <Route
+                path="/login"
+                element={
+                  <GuestRoute>
+                    <LoginPage />
+                  </GuestRoute>
+                }
+              />
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/" element={<InvoicesPage />} />
+                <Route path="/invoices/new" element={<CreateInvoicePage />} />
+                <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+                <Route path="/invoices/:id/edit" element={<EditInvoicePage />} />
+              </Route>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+          <Toaster position="bottom-right" richColors closeButton />
+        </SWRConfig>
+      </LocaleProvider>
     </ThemeProvider>
   );
 }

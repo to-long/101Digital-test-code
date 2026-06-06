@@ -1,6 +1,6 @@
+import type { User } from '@simple-invoice/shared';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User } from '@simple-invoice/shared';
 
 interface AuthState {
   token: string | null;

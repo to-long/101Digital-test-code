@@ -1,8 +1,8 @@
-import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
 import { eq } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 import { DRIZZLE } from '../db/db.module';
 import * as schema from '../db/schema';
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import { IntlProvider } from 'react-intl';
 import { catalogs } from './messages';
 
@@ -39,11 +39,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   return (
     <LocaleContext.Provider value={{ locale, setLocale }}>
-      <IntlProvider
-        locale={locale}
-        messages={catalogs[locale]}
-        defaultLocale="en"
-      >
+      <IntlProvider locale={locale} messages={catalogs[locale]} defaultLocale="en">
         {children}
       </IntlProvider>
     </LocaleContext.Provider>

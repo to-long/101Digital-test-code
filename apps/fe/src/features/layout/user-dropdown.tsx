@@ -1,17 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FormattedMessage, useIntl } from 'react-intl';
-import {
-  ChevronDown,
-  LogOut,
-  Sun,
-  Moon,
-  Monitor,
-  Languages,
-} from 'lucide-react';
 import { useAuthStore } from '@/lib/auth';
-import { useTheme, type Theme } from '@/lib/theme';
-import { useLocale, type Locale } from '@/lib/i18n';
+import { type Locale, useLocale } from '@/lib/i18n';
+import { type Theme, useTheme } from '@/lib/theme';
+import { ChevronDown, Languages, LogOut, Monitor, Moon, Sun } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { useNavigate } from 'react-router-dom';
 
 function useClickOutside<T extends HTMLElement>(
   ref: React.RefObject<T | null>,
@@ -39,7 +32,10 @@ export default function UserDropdown() {
 
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  useClickOutside(ref, useCallback(() => setOpen(false), []));
+  useClickOutside(
+    ref,
+    useCallback(() => setOpen(false), []),
+  );
 
   if (!user) return null;
   const initial = user.fullname?.charAt(0)?.toUpperCase() ?? 'U';
@@ -90,9 +86,7 @@ export default function UserDropdown() {
               {initial}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-semibold text-gray-900 truncate">
-                {user.fullname}
-              </span>
+              <span className="text-sm font-semibold text-gray-900 truncate">{user.fullname}</span>
               <span className="text-[11px] text-gray-500 truncate">{user.email}</span>
             </div>
           </div>
@@ -105,7 +99,11 @@ export default function UserDropdown() {
               <Sun className="h-3.5 w-3.5" />
               <FormattedMessage id="user.theme" />
             </div>
-            <div className="flex gap-1 rounded-lg bg-gray-100 p-0.5" role="radiogroup" aria-label="Theme">
+            <div
+              className="flex gap-1 rounded-lg bg-gray-100 p-0.5"
+              role="radiogroup"
+              aria-label="Theme"
+            >
               {themeOptions.map(({ value, labelKey, Icon }) => (
                 <button
                   key={value}
@@ -135,7 +133,11 @@ export default function UserDropdown() {
               <Languages className="h-3.5 w-3.5" />
               <FormattedMessage id="user.language" />
             </div>
-            <div className="flex gap-1 rounded-lg bg-gray-100 p-0.5" role="radiogroup" aria-label="Language">
+            <div
+              className="flex gap-1 rounded-lg bg-gray-100 p-0.5"
+              role="radiogroup"
+              aria-label="Language"
+            >
               {langOptions.map(({ value, short, label }) => (
                 <button
                   key={value}

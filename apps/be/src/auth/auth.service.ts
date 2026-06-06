@@ -1,7 +1,7 @@
-import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { eq } from 'drizzle-orm';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import type { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { eq } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { DRIZZLE } from '../db/db.module';
 import * as schema from '../db/schema';

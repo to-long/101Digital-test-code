@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll } from 'bun:test';
+import { beforeAll, describe, expect, test } from 'bun:test';
 
 const BASE = `http://localhost:${process.env.PORT || 4001}/api`;
 let token: string;

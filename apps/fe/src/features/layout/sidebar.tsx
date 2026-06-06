@@ -1,17 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useIntl } from 'react-intl';
-import SidebarAccountMenu from './sidebar-account-menu';
 import {
-  FileText,
-  LayoutDashboard,
-  Users,
-  CreditCard,
   BarChart3,
-  Settings,
   ChevronLeft,
   ChevronRight,
+  CreditCard,
+  FileText,
+  LayoutDashboard,
+  Settings,
+  Users,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useIntl } from 'react-intl';
+import { useLocation, useNavigate } from 'react-router-dom';
+import SidebarAccountMenu from './sidebar-account-menu';
 
 const navItems: Array<{ labelKey: string; icon: typeof FileText; href: string | null }> = [
   { labelKey: 'sidebar.invoices', icon: FileText, href: '/' },
@@ -78,9 +78,7 @@ export default function Sidebar() {
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500">
           <FileText className="h-4 w-4 text-white" />
         </div>
-        {!collapsed && (
-          <span className="text-sm font-semibold truncate">SimpleInvoice</span>
-        )}
+        {!collapsed && <span className="text-sm font-semibold truncate">SimpleInvoice</span>}
         {/* Toggle button positioned at the right edge */}
         <button
           type="button"
@@ -115,13 +113,9 @@ export default function Sidebar() {
               onClick={() => item.href && navigate(item.href)}
               title={collapsed ? label : undefined}
               className={`flex items-center rounded-xl text-base font-medium transition-colors ${
-                collapsed
-                  ? 'justify-center h-11 w-11 mx-auto'
-                  : 'gap-2 px-6 py-3'
+                collapsed ? 'justify-center h-11 w-11 mx-auto' : 'gap-2 px-6 py-3'
               } ${
-                isActive
-                  ? 'bg-gray-100/80 text-gray-900'
-                  : 'text-gray-500 hover:bg-gray-50'
+                isActive ? 'bg-gray-100/80 text-gray-900' : 'text-gray-500 hover:bg-gray-50'
               } ${!item.href ? 'cursor-default' : 'cursor-pointer'}`}
             >
               <Icon

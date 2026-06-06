@@ -1,8 +1,8 @@
+import { type Locale, useLocale } from '@/lib/i18n';
+import { type Theme, useTheme } from '@/lib/theme';
+import { Languages, Monitor, Moon, Settings, Sun } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
-import { Settings, Sun, Moon, Monitor, Languages } from 'lucide-react';
-import { useTheme, type Theme } from '@/lib/theme';
-import { useLocale, type Locale } from '@/lib/i18n';
 
 function useClickOutside<T extends HTMLElement>(
   ref: React.RefObject<T | null>,
@@ -34,7 +34,10 @@ export default function SettingsDropdown() {
 
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  useClickOutside(ref, useCallback(() => setOpen(false), []));
+  useClickOutside(
+    ref,
+    useCallback(() => setOpen(false), []),
+  );
 
   const themeOptions: Array<{ value: Theme; labelKey: string; Icon: typeof Sun }> = [
     { value: 'light', labelKey: 'user.theme.light', Icon: Sun },

@@ -1,25 +1,64 @@
+import * as bcrypt from 'bcrypt';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as bcrypt from 'bcrypt';
-import { users, invoices, invoiceItems } from './schema';
+import { invoiceItems, invoices, users } from './schema';
 
 const CURRENCY_SYMBOLS: Record<string, string> = { AUD: 'A$', USD: '$', GBP: '£' };
 
 const CUSTOMERS = [
   { fullname: 'Paul', email: 'paul@101digital.io', mobile: '947717364111', address: 'Singapore' },
-  { fullname: 'Alice Wong', email: 'alice@acme.com', mobile: '+61400111222', address: 'Sydney, Australia' },
+  {
+    fullname: 'Alice Wong',
+    email: 'alice@acme.com',
+    mobile: '+61400111222',
+    address: 'Sydney, Australia',
+  },
   { fullname: 'Bob Smith', email: 'bob@widgets.co', mobile: '+44700123456', address: 'London, UK' },
-  { fullname: 'Charlie Lee', email: 'charlie@techstart.io', mobile: '+1650555888', address: 'San Francisco, USA' },
-  { fullname: 'Diana Patel', email: 'diana@globalserv.com', mobile: '+61412333444', address: 'Melbourne, Australia' },
-  { fullname: 'Edward Kim', email: 'edward@nexus.kr', mobile: '+82101234567', address: 'Seoul, South Korea' },
-  { fullname: 'Fiona Chen', email: 'fiona@skyline.hk', mobile: '+85291234567', address: 'Hong Kong' },
-  { fullname: 'George Martin', email: 'george@crafted.co.uk', mobile: '+44701234567', address: 'Manchester, UK' },
+  {
+    fullname: 'Charlie Lee',
+    email: 'charlie@techstart.io',
+    mobile: '+1650555888',
+    address: 'San Francisco, USA',
+  },
+  {
+    fullname: 'Diana Patel',
+    email: 'diana@globalserv.com',
+    mobile: '+61412333444',
+    address: 'Melbourne, Australia',
+  },
+  {
+    fullname: 'Edward Kim',
+    email: 'edward@nexus.kr',
+    mobile: '+82101234567',
+    address: 'Seoul, South Korea',
+  },
+  {
+    fullname: 'Fiona Chen',
+    email: 'fiona@skyline.hk',
+    mobile: '+85291234567',
+    address: 'Hong Kong',
+  },
+  {
+    fullname: 'George Martin',
+    email: 'george@crafted.co.uk',
+    mobile: '+44701234567',
+    address: 'Manchester, UK',
+  },
 ];
 
 const ITEMS = [
-  'Honda RC150', 'Web Development Service', 'Cloud Hosting (12 months)', 'UI/UX Design Package',
-  'SEO Optimization', 'Mobile App Development', 'Data Analytics Dashboard', 'Server Maintenance',
-  'Consulting Services', 'Logo Design', 'API Integration', 'Cybersecurity Audit',
+  'Honda RC150',
+  'Web Development Service',
+  'Cloud Hosting (12 months)',
+  'UI/UX Design Package',
+  'SEO Optimization',
+  'Mobile App Development',
+  'Data Analytics Dashboard',
+  'Server Maintenance',
+  'Consulting Services',
+  'Logo Design',
+  'API Integration',
+  'Cybersecurity Audit',
 ];
 
 function randomDate(start: Date, end: Date): string {
@@ -153,8 +192,7 @@ async function main() {
         dueDate: dueDateStr,
         currency,
         currencySymbol: CURRENCY_SYMBOLS[currency],
-        description:
-          Math.random() > 0.3 ? `Invoice for ${randomChoice(ITEMS)}` : undefined,
+        description: Math.random() > 0.3 ? `Invoice for ${randomChoice(ITEMS)}` : undefined,
         status,
         customerName: customer.fullname,
         customerEmail: customer.email,
@@ -178,7 +216,9 @@ async function main() {
     });
   }
 
-  console.log(`Seeded ${TOTAL_GENERATED + 1} invoices (1 fixed mock + ${TOTAL_GENERATED} generated)`);
+  console.log(
+    `Seeded ${TOTAL_GENERATED + 1} invoices (1 fixed mock + ${TOTAL_GENERATED} generated)`,
+  );
   console.log('Default login: admin@simpleinvoice.com / password123');
 
   await client.end();

@@ -1,6 +1,6 @@
-import { DayPicker, useDayPicker, type DayPickerProps } from 'react-day-picker';
 import { format } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { DayPicker, type DayPickerProps, useDayPicker } from 'react-day-picker';
 import 'react-day-picker/style.css';
 
 export type CalendarProps = DayPickerProps;
@@ -11,9 +11,7 @@ function MonthCaption({ calendarMonth }: { calendarMonth: { date: Date } }) {
   const { previousMonth, nextMonth, goToMonth } = useDayPicker();
   return (
     <div className="flex items-center gap-2 h-8">
-      <span className="text-[13px] font-semibold">
-        {format(calendarMonth.date, 'MMMM yyyy')}
-      </span>
+      <span className="text-[13px] font-semibold">{format(calendarMonth.date, 'MMMM yyyy')}</span>
       <div className="flex items-center gap-0.5">
         <button
           type="button"

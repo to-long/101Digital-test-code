@@ -32,10 +32,7 @@ const zhModules = import.meta.glob('./messages/zh/*.json', {
 }) as Record<string, Catalog>;
 
 function merge(modules: Record<string, Catalog>): Catalog {
-  return Object.values(modules).reduce<Catalog>(
-    (acc, mod) => Object.assign(acc, mod),
-    {},
-  );
+  return Object.values(modules).reduce<Catalog>((acc, mod) => Object.assign(acc, mod), {});
 }
 
 export const en: Catalog = merge(enModules);

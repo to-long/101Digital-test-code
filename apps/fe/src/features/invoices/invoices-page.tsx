@@ -1,30 +1,30 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { FormattedMessage, useIntl } from 'react-intl';
-import { toast } from 'sonner';
-import { mutate as globalMutate } from 'swr';
-import { useInvoices } from '@/lib/swr';
-import { api } from '@/lib/api';
-import { formatDate, formatCurrency } from '@/lib/format';
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
-import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
-import type { DateRange } from 'react-day-picker';
+import { api } from '@/lib/api';
+import { formatCurrency, formatDate } from '@/lib/format';
+import { useInvoices } from '@/lib/swr';
+import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
+import { endOfMonth, format, startOfMonth, subDays, subMonths } from 'date-fns';
 import {
-  Plus,
-  Search,
+  Calendar,
+  Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronsUpDown,
   ChevronUp,
+  ChevronsUpDown,
   Eye,
   Pencil,
-  Calendar,
-  ChevronDown,
-  X,
-  Check,
+  Plus,
+  Search,
   Trash2,
+  X,
 } from 'lucide-react';
-import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
+import { useEffect, useRef, useState } from 'react';
+import type { DateRange } from 'react-day-picker';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { Link, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { mutate as globalMutate } from 'swr';
 
 const STATUS_COLORS: Record<InvoiceDisplayStatus, string> = {
   Overdue: 'bg-red-100 text-red-700',
@@ -37,8 +37,8 @@ export default function InvoicesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const intl = useIntl();
 
-  const page = parseInt(searchParams.get('page') || '1');
-  const pageSize = parseInt(searchParams.get('pageSize') || '10');
+  const page = Number.parseInt(searchParams.get('page') || '1');
+  const pageSize = Number.parseInt(searchParams.get('pageSize') || '10');
   const sortBy = searchParams.get('sortBy') || '';
   const ordering = searchParams.get('ordering') || 'DESC';
   const status = searchParams.get('status') || '';
@@ -62,11 +62,9 @@ export default function InvoicesPage() {
         ),
       });
       // Revalidate every list cache so the row disappears immediately.
-      await globalMutate(
-        (key) => Array.isArray(key) && key[0] === 'invoices',
-        undefined,
-        { revalidate: true },
-      );
+      await globalMutate((key) => Array.isArray(key) && key[0] === 'invoices', undefined, {
+        revalidate: true,
+      });
       setDeleteTarget(null);
     } catch (err: any) {
       toast.error(intl.formatMessage({ id: 'detail.toast.deleteError' }), {
@@ -153,7 +151,6 @@ export default function InvoicesPage() {
 
   useEffect(() => {
     setDraftRange(parsedRange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromDate, toDate]);
 
   useEffect(() => {
@@ -241,9 +238,11 @@ export default function InvoicesPage() {
     // box size (two stacked arrows vs one). Use 3.5 across all three so they
     // appear visually consistent in the column header.
     if (sortBy !== field) return <ChevronsUpDown className="h-3.5 w-3.5 text-gray-400 shrink-0" />;
-    return ordering === 'ASC'
-      ? <ChevronUp className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-      : <ChevronDown className="h-3.5 w-3.5 text-blue-500 shrink-0" />;
+    return ordering === 'ASC' ? (
+      <ChevronUp className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+    ) : (
+      <ChevronDown className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+    );
   }
 
   const totalPages = data ? Math.ceil(data.paging.total / pageSize) : 0;
@@ -302,7 +301,9 @@ export default function InvoicesPage() {
         <div className="relative">
           <select
             value={status || 'all'}
-            onChange={(e) => updateParams({ status: e.target.value === 'all' ? '' : e.target.value })}
+            onChange={(e) =>
+              updateParams({ status: e.target.value === 'all' ? '' : e.target.value })
+            }
             className="appearance-none rounded-xl border px-3.5 py-2.5 pr-8 text-[13px] font-medium cursor-pointer outline-none focus:border-blue-400 bg-white"
           >
             <option value="all">{intl.formatMessage({ id: 'invoices.allStatuses' })}</option>
@@ -571,49 +572,55 @@ export default function InvoicesPage() {
       {/* PAGINATION — reserved space (h-8 mt-4) so layout doesn't jump on first load */}
       <div className="min-h-8 mt-4 shrink-0">
         {data && totalPages > 0 && (
-        <div className="flex justify-between items-center">
-          <span className="text-xs text-gray-500">
-            <FormattedMessage
-              id="invoices.pagination.showing"
-              values={{ from: showFrom, to: showTo, total: totalItems }}
-            />
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              disabled={page <= 1}
-              onClick={() => updateParams({ page: String(page - 1) })}
-              className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-800 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            {getPageNumbers().map((p, i) =>
-              p === 'ellipsis' ? (
-                <span key={`e-${i}`} className="w-8 h-8 flex items-center justify-center text-[13px] text-gray-400">
-                  &hellip;
-                </span>
-              ) : (
-                <button
-                  key={p}
-                  onClick={() => updateParams({ page: String(p) })}
-                  className={`w-8 h-8 flex items-center justify-center rounded-xl border text-[13px] cursor-pointer transition-colors ${
-                    p === page
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white text-gray-800 border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  {p}
-                </button>
-              ),
-            )}
-            <button
-              disabled={page >= totalPages}
-              onClick={() => updateParams({ page: String(page + 1) })}
-              className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-800 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-gray-500">
+              <FormattedMessage
+                id="invoices.pagination.showing"
+                values={{ from: showFrom, to: showTo, total: totalItems }}
+              />
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                disabled={page <= 1}
+                onClick={() => updateParams({ page: String(page - 1) })}
+                className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-800 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              {getPageNumbers().map((p, i) =>
+                p === 'ellipsis' ? (
+                  <span
+                    key={`e-${i}`}
+                    className="w-8 h-8 flex items-center justify-center text-[13px] text-gray-400"
+                  >
+                    &hellip;
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    key={p}
+                    onClick={() => updateParams({ page: String(p) })}
+                    className={`w-8 h-8 flex items-center justify-center rounded-xl border text-[13px] cursor-pointer transition-colors ${
+                      p === page
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-white text-gray-800 border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ),
+              )}
+              <button
+                type="button"
+                disabled={page >= totalPages}
+                onClick={() => updateParams({ page: String(page + 1) })}
+                className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-800 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
-        </div>
         )}
       </div>
 

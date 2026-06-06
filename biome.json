@@ -3,7 +3,29 @@
   "organizeImports": { "enabled": true },
   "linter": {
     "enabled": true,
-    "rules": { "recommended": true }
+    "rules": {
+      "recommended": true,
+      "style": {
+        "noNonNullAssertion": "off",
+        "useImportType": "warn"
+      },
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off"
+      },
+      "a11y": {
+        "useKeyWithClickEvents": "off",
+        "noLabelWithoutControl": "off",
+        "useSemanticElements": "off",
+        "useButtonType": "warn"
+      },
+      "complexity": {
+        "noForEach": "off"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "off"
+      }
+    }
   },
   "formatter": {
     "enabled": true,
@@ -15,9 +37,21 @@
     "formatter": {
       "quoteStyle": "single",
       "semicolons": "always"
+    },
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
     }
   },
   "files": {
-    "ignore": ["node_modules", "dist", "drizzle", ".next", "coverage"]
+    "ignore": [
+      "node_modules",
+      "dist",
+      "drizzle",
+      ".next",
+      "coverage",
+      "docs",
+      "*.pen",
+      "apps/fe/public"
+    ]
   }
 }

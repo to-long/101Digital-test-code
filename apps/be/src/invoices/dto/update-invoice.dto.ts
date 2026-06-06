@@ -1,14 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  IsString,
-  IsNotEmpty,
   IsEmail,
-  IsOptional,
   IsEnum,
-  IsNumber,
   IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
   IsPositive,
+  IsString,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -88,10 +88,10 @@ export class UpdateInvoiceDto {
   @ApiProperty({ example: 10, default: 10 })
   @IsNumber()
   @Min(0)
-  taxPercent: number = 10;
+  taxPercent = 10;
 
   @ApiProperty({ example: 0, default: 0 })
   @IsNumber()
   @Min(0)
-  discount: number = 0;
+  discount = 0;
 }

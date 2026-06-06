@@ -1,6 +1,6 @@
-import { Outlet, useLocation } from 'react-router-dom';
-import { useIntl } from 'react-intl';
 import { Home } from 'lucide-react';
+import { useIntl } from 'react-intl';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './sidebar';
 import UserDropdown from './user-dropdown';
 

@@ -1,10 +1,10 @@
 import type {
-  LoginResponse,
-  User,
-  Invoice,
-  PaginatedResponse,
   CreateInvoiceRequest,
+  Invoice,
+  LoginResponse,
+  PaginatedResponse,
   UpdateInvoiceRequest,
+  User,
 } from '@simple-invoice/shared';
 import { useAuthStore } from './auth';
 
@@ -16,7 +16,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     'Content-Type': 'application/json',
     ...(options?.headers as Record<string, string>),
   };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
 
@@ -25,7 +25,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       useAuthStore.getState().logout();
     }
     const body = await res.json().catch(() => ({}));
-    const msg = Array.isArray(body.message) ? body.message.join(', ') : body.message || `Error ${res.status}`;
+    const msg = Array.isArray(body.message)
+      ? body.message.join(', ')
+      : body.message || `Error ${res.status}`;
     throw new Error(msg);
   }
 
@@ -57,7 +59,6 @@ export const api = {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
-    remove: (id: string) =>
-      request<void>(`/invoices/${id}`, { method: 'DELETE' }),
+    remove: (id: string) => request<void>(`/invoices/${id}`, { method: 'DELETE' }),
   },
 };

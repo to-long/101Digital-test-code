@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 
 function calculateInvoice(quantity: number, rate: number, taxPercent: number, discount: number) {
   const subTotal = quantity * rate;

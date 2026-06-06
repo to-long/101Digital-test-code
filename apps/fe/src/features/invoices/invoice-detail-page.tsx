@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { FormattedMessage, useIntl } from 'react-intl';
-import { toast } from 'sonner';
-import { useInvoice, useDeleteInvoice } from '@/lib/swr';
-import { formatDate, formatCurrency } from '@/lib/format';
-import InvoiceStatusBadge from './components/invoice-status-badge';
-import { ArrowLeft, Pencil, Printer, Trash2 } from 'lucide-react';
+import { formatCurrency, formatDate } from '@/lib/format';
+import { useDeleteInvoice, useInvoice } from '@/lib/swr';
 import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
+import { ArrowLeft, Pencil, Printer, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import InvoiceStatusBadge from './components/invoice-status-badge';
 
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -53,6 +53,7 @@ export default function InvoiceDetailPage() {
           <FormattedMessage id="detail.notFound" />
         </p>
         <button
+          type="button"
           className="text-blue-500 hover:underline text-sm mt-2 cursor-pointer"
           onClick={() => navigate('/')}
         >
@@ -78,6 +79,7 @@ export default function InvoiceDetailPage() {
       <div className="sticky -top-3 sm:-top-4 z-20 -mx-4 sm:-mx-8 -mt-3 sm:-mt-4 px-4 sm:px-8 py-2 bg-white border-b border-gray-100 flex justify-between items-center gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <button
+            type="button"
             onClick={() => navigate('/')}
             aria-label="Back"
             className="h-8 w-8 shrink-0 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
@@ -105,6 +107,7 @@ export default function InvoiceDetailPage() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
+            type="button"
             onClick={() => window.print()}
             className="rounded-full border border-gray-200 bg-white px-3 py-1.5 flex items-center gap-1.5 hover:bg-gray-50 transition-colors cursor-pointer"
           >
@@ -116,6 +119,7 @@ export default function InvoiceDetailPage() {
           {inv.status !== 'Paid' && (
             <>
               <button
+                type="button"
                 onClick={() => setConfirmOpen(true)}
                 aria-label="Delete"
                 title={intl.formatMessage({ id: 'detail.delete' })}
@@ -124,6 +128,7 @@ export default function InvoiceDetailPage() {
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
               <button
+                type="button"
                 onClick={() => navigate(`/invoices/${id}/edit`)}
                 className="rounded-full bg-blue-500 text-white px-3.5 py-1.5 flex items-center gap-1.5 hover:bg-blue-600 transition-colors cursor-pointer"
               >
@@ -185,7 +190,9 @@ export default function InvoiceDetailPage() {
               <p className="text-[13px] text-gray-500 mt-0.5">{inv.customer.mobileNumber}</p>
             )}
             {inv.customer.address && (
-              <p className="text-[13px] text-gray-500 mt-0.5 leading-[1.5]">{inv.customer.address}</p>
+              <p className="text-[13px] text-gray-500 mt-0.5 leading-[1.5]">
+                {inv.customer.address}
+              </p>
             )}
           </div>
         </div>
@@ -215,7 +222,9 @@ export default function InvoiceDetailPage() {
               </div>
               <div className="w-20 text-right text-sm">{item.quantity}</div>
               <div className="w-[140px] text-right text-sm">{formatCurrency(item.rate, sym)}</div>
-              <div className="w-[140px] text-right text-sm">{formatCurrency(item.quantity * item.rate, sym)}</div>
+              <div className="w-[140px] text-right text-sm">
+                {formatCurrency(item.quantity * item.rate, sym)}
+              </div>
             </div>
           ))}
         </div>
@@ -238,7 +247,9 @@ export default function InvoiceDetailPage() {
               <span className="text-[13px] text-gray-500">
                 <FormattedMessage id="detail.subtotal" />
               </span>
-              <span className="text-[13px] font-medium">{formatCurrency(inv.invoiceSubTotal, sym)}</span>
+              <span className="text-[13px] font-medium">
+                {formatCurrency(inv.invoiceSubTotal, sym)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-[13px] text-gray-500">
@@ -250,7 +261,9 @@ export default function InvoiceDetailPage() {
               <span className="text-[13px] text-gray-500">
                 <FormattedMessage id="detail.discount" />
               </span>
-              <span className="text-[13px] font-medium">&minus; {formatCurrency(inv.totalDiscount, sym)}</span>
+              <span className="text-[13px] font-medium">
+                &minus; {formatCurrency(inv.totalDiscount, sym)}
+              </span>
             </div>
             <div className="h-px bg-gray-200" />
             <div className="flex justify-between">
@@ -263,13 +276,17 @@ export default function InvoiceDetailPage() {
               <span className="text-[13px] text-green-600">
                 <FormattedMessage id="detail.paid" />
               </span>
-              <span className="text-[13px] text-green-600">{formatCurrency(inv.totalPaid, sym)}</span>
+              <span className="text-[13px] text-green-600">
+                {formatCurrency(inv.totalPaid, sym)}
+              </span>
             </div>
             <div className="rounded-sm bg-blue-50 border border-blue-500 px-4 py-3.5 flex justify-between">
               <span className="text-[13px] font-semibold">
                 <FormattedMessage id="detail.outstanding" />
               </span>
-              <span className="text-lg font-semibold text-blue-500">{formatCurrency(inv.balanceAmount, sym)}</span>
+              <span className="text-lg font-semibold text-blue-500">
+                {formatCurrency(inv.balanceAmount, sym)}
+              </span>
             </div>
           </div>
         </div>

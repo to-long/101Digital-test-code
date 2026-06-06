@@ -71,7 +71,6 @@
     @apply bg-background text-foreground;
     font-family: system-ui, -apple-system, sans-serif;
   }
-
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
@@ -85,7 +84,8 @@
  * ─────────────────────────────────────────────────────────────────────────── */
 .theme-switching,
 .theme-switching * {
-  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, fill 150ms ease !important;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, fill 150ms
+    ease !important;
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
@@ -97,25 +97,57 @@
  * invasive refactor. Add per-component `dark:` classes only when more
  * specific tweaks are needed.
  * ─────────────────────────────────────────────────────────────────────────── */
-.dark .bg-white { background-color: var(--color-surface) !important; }
-.dark .bg-gray-50 { background-color: #1a2233 !important; }
-.dark .bg-gray-50\/50 { background-color: #1a2233 !important; }
-.dark .bg-gray-100 { background-color: #2a3447 !important; }
-.dark .bg-gray-100\/80 { background-color: rgba(42, 52, 71, 0.8) !important; }
+.dark .bg-white {
+  background-color: var(--color-surface) !important;
+}
+.dark .bg-gray-50 {
+  background-color: #1a2233 !important;
+}
+.dark .bg-gray-50\/50 {
+  background-color: #1a2233 !important;
+}
+.dark .bg-gray-100 {
+  background-color: #2a3447 !important;
+}
+.dark .bg-gray-100\/80 {
+  background-color: rgba(42, 52, 71, 0.8) !important;
+}
 /* Used as divider lines (h-px bg-gray-200). Default #e5e7eb reads as a
  * bright glowing line on dark surfaces — drop it to match the soft border. */
-.dark .bg-gray-200 { background-color: #2a3447 !important; }
-.dark .bg-\[\#F7F8FA\] { background-color: var(--color-surface-muted) !important; }
-.dark .bg-\[\#FAFAFA\] { background-color: #1a2233 !important; }
-.dark .bg-\[\#F5F5F5\] { background-color: #2a3447 !important; }
+.dark .bg-gray-200 {
+  background-color: #2a3447 !important;
+}
+.dark .bg-\[\#F7F8FA\] {
+  background-color: var(--color-surface-muted) !important;
+}
+.dark .bg-\[\#FAFAFA\] {
+  background-color: #1a2233 !important;
+}
+.dark .bg-\[\#F5F5F5\] {
+  background-color: #2a3447 !important;
+}
 
-.dark .text-gray-900 { color: var(--color-text) !important; }
-.dark .text-gray-800 { color: #e5e7eb !important; }
-.dark .text-gray-700 { color: #d1d5db !important; }
-.dark .text-gray-600 { color: #9ca3af !important; }
-.dark .text-gray-500 { color: var(--color-text-muted) !important; }
-.dark .text-gray-400 { color: var(--color-text-subtle) !important; }
-.dark .text-gray-300 { color: #4b5563 !important; }
+.dark .text-gray-900 {
+  color: var(--color-text) !important;
+}
+.dark .text-gray-800 {
+  color: #e5e7eb !important;
+}
+.dark .text-gray-700 {
+  color: #d1d5db !important;
+}
+.dark .text-gray-600 {
+  color: #9ca3af !important;
+}
+.dark .text-gray-500 {
+  color: var(--color-text-muted) !important;
+}
+.dark .text-gray-400 {
+  color: var(--color-text-subtle) !important;
+}
+.dark .text-gray-300 {
+  color: #4b5563 !important;
+}
 
 .dark .border,
 .dark .border-r,
@@ -128,26 +160,58 @@
 }
 
 /* Hover surfaces in dark mode */
-.dark .hover\:bg-gray-50:hover { background-color: #1a2233 !important; }
-.dark .hover\:bg-gray-100:hover { background-color: #2a3447 !important; }
-.dark .hover\:bg-gray-200:hover { background-color: #374151 !important; }
+.dark .hover\:bg-gray-50:hover {
+  background-color: #1a2233 !important;
+}
+.dark .hover\:bg-gray-100:hover {
+  background-color: #2a3447 !important;
+}
+.dark .hover\:bg-gray-200:hover {
+  background-color: #374151 !important;
+}
 
 /* Status badges — flip both bg and fg so the chip is readable on dark surfaces.
  * Original light theme used dark-700 text on light-100 bg; dark theme needs the
  * inverse: lighter text on a more saturated bg.
  */
-.dark .bg-amber-100 { background-color: rgba(251, 191, 36, 0.22) !important; }
-.dark .bg-red-100 { background-color: rgba(248, 113, 113, 0.22) !important; }
-.dark .bg-green-100 { background-color: rgba(74, 222, 128, 0.22) !important; }
-.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.18) !important; }
-.dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.28) !important; }
+.dark .bg-amber-100 {
+  background-color: rgba(251, 191, 36, 0.22) !important;
+}
+.dark .bg-red-100 {
+  background-color: rgba(248, 113, 113, 0.22) !important;
+}
+.dark .bg-green-100 {
+  background-color: rgba(74, 222, 128, 0.22) !important;
+}
+.dark .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.18) !important;
+}
+.dark .bg-blue-100 {
+  background-color: rgba(59, 130, 246, 0.28) !important;
+}
 
 /* Text colors used by status chips — bump to the 300 family for contrast. */
-.dark .text-amber-700 { color: #fcd34d !important; }
-.dark .text-red-700 { color: #fca5a5 !important; }
-.dark .text-green-700 { color: #86efac !important; }
-.dark .text-blue-900 { color: #93c5fd !important; }
-.dark .text-blue-800 { color: #93c5fd !important; }
-.dark .text-blue-500 { color: #60a5fa !important; }
-.dark .text-red-600 { color: #fca5a5 !important; }
-.dark .text-amber-900 { color: #fde68a !important; }
+.dark .text-amber-700 {
+  color: #fcd34d !important;
+}
+.dark .text-red-700 {
+  color: #fca5a5 !important;
+}
+.dark .text-green-700 {
+  color: #86efac !important;
+}
+.dark .text-blue-900 {
+  color: #93c5fd !important;
+}
+.dark .text-blue-800 {
+  color: #93c5fd !important;
+}
+.dark .text-blue-500 {
+  color: #60a5fa !important;
+}
+.dark .text-red-600 {
+  color: #fca5a5 !important;
+}
+.dark .text-amber-900 {
+  color: #fde68a !important;
+}

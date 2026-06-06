@@ -1,13 +1,24 @@
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { errorMessageKey } from '@/lib/form-error';
+import { useCreateInvoice } from '@/lib/swr';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  CURRENCIES,
+  CURRENCY_SYMBOLS,
+  type CreateInvoiceInput,
+  createInvoiceSchema,
+} from '@simple-invoice/shared';
+import { ArrowLeft, Info, Save } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { FormattedMessage, useIntl } from 'react-intl';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { FormattedMessage, useIntl } from 'react-intl';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { createInvoiceSchema, type CreateInvoiceInput, CURRENCIES, CURRENCY_SYMBOLS } from '@simple-invoice/shared';
-import { useCreateInvoice } from '@/lib/swr';
-import { errorMessageKey } from '@/lib/form-error';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Info } from 'lucide-react';
 
 export default function CreateInvoicePage() {
   const navigate = useNavigate();
@@ -115,11 +126,14 @@ export default function CreateInvoicePage() {
         <div className="flex-1 flex flex-col gap-3">
           {/* Customer Card */}
           <div className="rounded-xl border border-gray-200 shadow-sm bg-white p-5">
-            <h2 className="text-base font-semibold mb-4"><FormattedMessage id="form.customerInfo" /></h2>
+            <h2 className="text-base font-semibold mb-4">
+              <FormattedMessage id="form.customerInfo" />
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-[13px] font-medium text-gray-700">
-                  <FormattedMessage id="form.customerName" /> <span className="text-red-500">*</span>
+                  <FormattedMessage id="form.customerName" />{' '}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   {...register('customer.fullname')}
@@ -130,7 +144,8 @@ export default function CreateInvoicePage() {
               </div>
               <div className="space-y-1">
                 <label className="text-[13px] font-medium text-gray-700">
-                  <FormattedMessage id="form.customerEmail" /> <span className="text-red-500">*</span>
+                  <FormattedMessage id="form.customerEmail" />{' '}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   {...register('customer.email')}
@@ -141,7 +156,9 @@ export default function CreateInvoicePage() {
                 <FieldError name="customer.email" />
               </div>
               <div className="space-y-1">
-                <label className="text-[13px] font-medium text-gray-700"><FormattedMessage id="form.mobile" /></label>
+                <label className="text-[13px] font-medium text-gray-700">
+                  <FormattedMessage id="form.mobile" />
+                </label>
                 <input
                   {...register('customer.mobileNumber')}
                   placeholder="+61400000000"
@@ -149,7 +166,9 @@ export default function CreateInvoicePage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[13px] font-medium text-gray-700"><FormattedMessage id="form.address" /></label>
+                <label className="text-[13px] font-medium text-gray-700">
+                  <FormattedMessage id="form.address" />
+                </label>
                 <input
                   {...register('customer.address')}
                   placeholder="City, Country"
@@ -161,11 +180,14 @@ export default function CreateInvoicePage() {
 
           {/* Invoice Card */}
           <div className="rounded-xl border border-gray-200 shadow-sm bg-white p-5">
-            <h2 className="text-base font-semibold mb-4"><FormattedMessage id="form.invoiceInfo" /></h2>
+            <h2 className="text-base font-semibold mb-4">
+              <FormattedMessage id="form.invoiceInfo" />
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-[13px] font-medium text-gray-700">
-                  <FormattedMessage id="form.invoiceNumber" /> <span className="text-red-500">*</span>
+                  <FormattedMessage id="form.invoiceNumber" />{' '}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   {...register('invoiceNumber')}
@@ -178,10 +200,7 @@ export default function CreateInvoicePage() {
                 <label className="text-[13px] font-medium text-gray-700">
                   <FormattedMessage id="form.currency" /> <span className="text-red-500">*</span>
                 </label>
-                <Select
-                  value={currency}
-                  onValueChange={(v) => setValue('currency', v as any)}
-                >
+                <Select value={currency} onValueChange={(v) => setValue('currency', v as any)}>
                   <SelectTrigger className="w-full rounded-xl border border-gray-300 py-2.5 px-3.5 text-sm h-auto">
                     <SelectValue />
                   </SelectTrigger>
@@ -195,7 +214,9 @@ export default function CreateInvoicePage() {
                 </Select>
               </div>
               <div className="space-y-1 col-span-1 sm:col-span-2">
-                <label className="text-[13px] font-medium text-gray-700"><FormattedMessage id="form.status" /></label>
+                <label className="text-[13px] font-medium text-gray-700">
+                  <FormattedMessage id="form.status" />
+                </label>
                 <div className="w-full rounded-xl border border-gray-300 bg-[#F5F5F5] py-2.5 px-3.5 text-sm text-gray-700">
                   <FormattedMessage id="status.Draft" />
                 </div>
@@ -223,7 +244,9 @@ export default function CreateInvoicePage() {
                 <FieldError name="dueDate" />
               </div>
               <div className="space-y-1 col-span-2">
-                <label className="text-[13px] font-medium text-gray-700"><FormattedMessage id="form.description" /></label>
+                <label className="text-[13px] font-medium text-gray-700">
+                  <FormattedMessage id="form.description" />
+                </label>
                 <input
                   {...register('description')}
                   className="w-full rounded-xl border border-gray-300 py-2.5 px-3.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
@@ -234,7 +257,9 @@ export default function CreateInvoicePage() {
 
           {/* Line Item Card */}
           <div className="rounded-xl border border-gray-200 shadow-sm bg-white p-5">
-            <h2 className="text-base font-semibold mb-4"><FormattedMessage id="form.lineItem" /></h2>
+            <h2 className="text-base font-semibold mb-4">
+              <FormattedMessage id="form.lineItem" />
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1 col-span-2">
                 <label className="text-[13px] font-medium text-gray-700">
@@ -277,10 +302,14 @@ export default function CreateInvoicePage() {
 
           {/* Tax & Discount Card */}
           <div className="rounded-xl border border-gray-200 shadow-sm bg-white p-5">
-            <h2 className="text-base font-semibold mb-4"><FormattedMessage id="form.taxDiscount" /></h2>
+            <h2 className="text-base font-semibold mb-4">
+              <FormattedMessage id="form.taxDiscount" />
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-[13px] font-medium text-gray-700"><FormattedMessage id="form.taxPercent" /></label>
+                <label className="text-[13px] font-medium text-gray-700">
+                  <FormattedMessage id="form.taxPercent" />
+                </label>
                 <input
                   {...register('taxPercent', { valueAsNumber: true })}
                   type="number"
@@ -291,7 +320,9 @@ export default function CreateInvoicePage() {
                 <FieldError name="taxPercent" />
               </div>
               <div className="space-y-1">
-                <label className="text-[13px] font-medium text-gray-700"><FormattedMessage id="form.discount" /> ({sym})</label>
+                <label className="text-[13px] font-medium text-gray-700">
+                  <FormattedMessage id="form.discount" /> ({sym})
+                </label>
                 <input
                   {...register('discount', { valueAsNumber: true })}
                   type="number"
@@ -309,26 +340,50 @@ export default function CreateInvoicePage() {
         <div className="w-full lg:w-[340px] shrink-0 flex flex-col gap-3">
           {/* Preview Total Card */}
           <div className="rounded-xl border border-gray-200 shadow-sm bg-white p-5">
-            <h3 className="text-sm font-semibold"><FormattedMessage id="form.previewTotal" /></h3>
-            <p className="text-[11px] text-gray-500 mt-0.5"><FormattedMessage id="form.previewSubtitle" /></p>
+            <h3 className="text-sm font-semibold">
+              <FormattedMessage id="form.previewTotal" />
+            </h3>
+            <p className="text-[11px] text-gray-500 mt-0.5">
+              <FormattedMessage id="form.previewSubtitle" />
+            </p>
             <div className="border-t border-gray-200 mt-3 pt-3 space-y-2">
               <div className="flex justify-between text-[13px]">
-                <span className="text-gray-500"><FormattedMessage id="detail.subtotal" /></span>
-                <span className="font-mono">{sym}{subTotal.toFixed(2)}</span>
+                <span className="text-gray-500">
+                  <FormattedMessage id="detail.subtotal" />
+                </span>
+                <span className="font-mono">
+                  {sym}
+                  {subTotal.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between text-[13px]">
-                <span className="text-gray-500"><FormattedMessage id="detail.tax" /> ({taxPercent}%)</span>
-                <span className="font-mono">{sym}{taxAmount.toFixed(2)}</span>
+                <span className="text-gray-500">
+                  <FormattedMessage id="detail.tax" /> ({taxPercent}%)
+                </span>
+                <span className="font-mono">
+                  {sym}
+                  {taxAmount.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between text-[13px]">
-                <span className="text-gray-500"><FormattedMessage id="detail.discount" /></span>
-                <span className="font-mono">-{sym}{discount.toFixed(2)}</span>
+                <span className="text-gray-500">
+                  <FormattedMessage id="detail.discount" />
+                </span>
+                <span className="font-mono">
+                  -{sym}
+                  {discount.toFixed(2)}
+                </span>
               </div>
             </div>
             <div className="border-t border-gray-200 mt-3 pt-3">
               <div className="flex justify-between text-lg font-bold">
-                <span><FormattedMessage id="detail.total" /></span>
-                <span className="font-mono">{sym}{totalAmount.toFixed(2)}</span>
+                <span>
+                  <FormattedMessage id="detail.total" />
+                </span>
+                <span className="font-mono">
+                  {sym}
+                  {totalAmount.toFixed(2)}
+                </span>
               </div>
             </div>
           </div>

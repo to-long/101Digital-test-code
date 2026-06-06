@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, integer, numeric } from 'drizzle-orm/pg-core';
+import { integer, numeric, pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
 import { invoices } from './invoices';
 
 export const invoiceItems = pgTable('invoice_items', {
