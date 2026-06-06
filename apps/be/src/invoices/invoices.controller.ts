@@ -15,10 +15,10 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import type { CreateInvoiceDto } from './dto/create-invoice.dto';
-import type { InvoiceQueryDto } from './dto/invoice-query.dto';
-import type { UpdateInvoiceDto } from './dto/update-invoice.dto';
-import type { InvoicesService } from './invoices.service';
+import { CreateInvoiceDto } from './dto/create-invoice.dto';
+import { InvoiceQueryDto } from './dto/invoice-query.dto';
+import { UpdateInvoiceDto } from './dto/update-invoice.dto';
+import { InvoicesService } from './invoices.service';
 
 @ApiTags('Invoices')
 @Controller('invoices')

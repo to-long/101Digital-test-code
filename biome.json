@@ -7,7 +7,7 @@
       "recommended": true,
       "style": {
         "noNonNullAssertion": "off",
-        "useImportType": "warn"
+        "useImportType": "off"
       },
       "suspicious": {
         "noExplicitAny": "off",
