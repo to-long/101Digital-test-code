@@ -89,3 +89,26 @@ export function useUpdateInvoice(id: string) {
     },
   );
 }
+
+// ─── Soft delete ────────────────────────────────────────────────────────────
+export function useDeleteInvoice(id: string) {
+  return useSWRMutation(
+    invoiceDetailKey(id),
+    async () => {
+      return api.invoices.remove(id);
+    },
+    {
+      onSuccess: () => {
+        // Drop the detail cache entirely — the row is gone from the API.
+        globalMutate(invoiceDetailKey(id), undefined, { revalidate: false });
+        // Revalidate every list cache so the row disappears from any
+        // filtered/sorted view immediately.
+        globalMutate(
+          (key) => Array.isArray(key) && key[0] === 'invoices',
+          undefined,
+          { revalidate: true },
+        );
+      },
+    },
+  );
+}

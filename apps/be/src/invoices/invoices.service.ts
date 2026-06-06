@@ -5,7 +5,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import { eq, and, ne, lt, or, ilike, gte, lte, asc, desc, sql } from 'drizzle-orm';
+import { eq, and, ne, lt, or, ilike, gte, lte, asc, desc, sql, isNull } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { DRIZZLE } from '../db/db.module';
 import * as schema from '../db/schema';
@@ -25,6 +25,9 @@ export class InvoicesService {
       query;
 
     const conditions: ReturnType<typeof eq>[] = [];
+
+    // Soft-delete: always hide rows where deletedAt is set.
+    conditions.push(isNull(schema.invoices.deletedAt));
 
     if (status === 'Overdue') {
       // Match the display logic in mapInvoiceResponse: only Pending invoices
@@ -79,12 +82,41 @@ export class InvoicesService {
     const [invoice] = await this.db
       .select()
       .from(schema.invoices)
-      .where(eq(schema.invoices.invoiceId, id))
+      // Hide soft-deleted rows from detail lookups too.
+      .where(and(eq(schema.invoices.invoiceId, id), isNull(schema.invoices.deletedAt)))
       .limit(1);
 
     if (!invoice) throw new NotFoundException('Invoice not found');
 
     return this.mapInvoiceWithItems(invoice);
+  }
+
+  /**
+   * Soft delete: stamps `deletedAt = NOW()` on the row instead of removing
+   * it, so audit history is preserved. List and detail queries filter on
+   * `deletedAt IS NULL`, so the row becomes invisible to the API while the
+   * record itself stays. Restoring it later is a single UPDATE.
+   *
+   * Paid invoices cannot be deleted — same immutability rule as update.
+   */
+  async softDelete(id: string) {
+    const [existing] = await this.db
+      .select()
+      .from(schema.invoices)
+      .where(and(eq(schema.invoices.invoiceId, id), isNull(schema.invoices.deletedAt)))
+      .limit(1);
+
+    if (!existing) throw new NotFoundException('Invoice not found');
+    if (existing.status === 'Paid') {
+      throw new BadRequestException('Paid invoices cannot be deleted');
+    }
+
+    await this.db
+      .update(schema.invoices)
+      .set({ deletedAt: sql`NOW()` })
+      .where(eq(schema.invoices.invoiceId, id));
+
+    return { invoiceId: id, deleted: true };
   }
 
   async create(dto: CreateInvoiceDto, userId: string) {

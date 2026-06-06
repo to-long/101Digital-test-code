@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
@@ -45,5 +58,15 @@ export class InvoicesController {
     @Body() dto: UpdateInvoiceDto,
   ) {
     return this.invoicesService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Soft-delete an invoice (sets deletedAt)' })
+  @ApiResponse({ status: 204, description: 'Invoice deleted' })
+  @ApiResponse({ status: 400, description: 'Paid invoices cannot be deleted' })
+  @ApiResponse({ status: 404, description: 'Invoice not found' })
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.invoicesService.softDelete(id);
   }
 }

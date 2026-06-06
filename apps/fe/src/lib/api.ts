@@ -29,6 +29,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     throw new Error(msg);
   }
 
+  // 204 No Content (used by DELETE) has no body to parse.
+  if (res.status === 204) return undefined as T;
   return res.json();
 }
 
@@ -55,5 +57,7 @@ export const api = {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
+    remove: (id: string) =>
+      request<void>(`/invoices/${id}`, { method: 'DELETE' }),
   },
 };

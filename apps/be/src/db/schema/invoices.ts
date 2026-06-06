@@ -30,4 +30,7 @@ export const invoices = pgTable('invoices', {
   createdBy: uuid('created_by')
     .notNull()
     .references(() => users.id),
+  // Soft-delete marker. NULL = active; non-null = removed (excluded from
+  // list / detail queries). Preserves history for auditing.
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
 });

@@ -20,5 +20,13 @@
   "detail.paid": "已付",
   "detail.outstanding": "未付余额",
   "detail.notFound": "未找到发票",
-  "detail.backToInvoices": "返回发票列表"
+  "detail.backToInvoices": "返回发票列表",
+  "detail.delete": "删除",
+  "detail.deleteConfirm.title": "删除这张发票?",
+  "detail.deleteConfirm.body": "发票 {number} 将从列表中隐藏。此操作无法从界面撤销。",
+  "detail.deleteConfirm.confirm": "删除",
+  "detail.deleteConfirm.cancel": "取消",
+  "detail.toast.deleted": "已删除发票",
+  "detail.toast.deletedDesc": "{number} 已被删除。",
+  "detail.toast.deleteError": "删除发票失败"
 }

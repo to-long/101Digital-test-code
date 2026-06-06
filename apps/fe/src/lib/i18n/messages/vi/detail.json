@@ -20,5 +20,13 @@
   "detail.paid": "Đã trả",
   "detail.outstanding": "Số tiền còn nợ",
   "detail.notFound": "Không tìm thấy hoá đơn",
-  "detail.backToInvoices": "Về danh sách hoá đơn"
+  "detail.backToInvoices": "Về danh sách hoá đơn",
+  "detail.delete": "Xoá",
+  "detail.deleteConfirm.title": "Xoá hoá đơn này?",
+  "detail.deleteConfirm.body": "Hoá đơn {number} sẽ bị ẩn khỏi danh sách. Không thể hoàn tác từ giao diện.",
+  "detail.deleteConfirm.confirm": "Xoá",
+  "detail.deleteConfirm.cancel": "Huỷ",
+  "detail.toast.deleted": "Đã xoá hoá đơn",
+  "detail.toast.deletedDesc": "{number} đã được xoá.",
+  "detail.toast.deleteError": "Không thể xoá hoá đơn"
 }

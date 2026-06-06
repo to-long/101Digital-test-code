@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FormattedMessage, useIntl } from 'react-intl';
-import { useInvoice } from '@/lib/swr';
+import { toast } from 'sonner';
+import { useInvoice, useDeleteInvoice } from '@/lib/swr';
 import { formatDate, formatCurrency } from '@/lib/format';
 import InvoiceStatusBadge from './components/invoice-status-badge';
-import { ArrowLeft, Pencil, Printer } from 'lucide-react';
+import { ArrowLeft, Pencil, Printer, Trash2 } from 'lucide-react';
 import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
 
 export default function InvoiceDetailPage() {
@@ -12,6 +14,28 @@ export default function InvoiceDetailPage() {
   const intl = useIntl();
 
   const { data: inv, isLoading, error } = useInvoice(id);
+  const { trigger: triggerDelete, isMutating: isDeleting } = useDeleteInvoice(id!);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  async function handleDelete() {
+    if (!inv) return;
+    try {
+      await triggerDelete();
+      toast.success(intl.formatMessage({ id: 'detail.toast.deleted' }), {
+        description: intl.formatMessage(
+          { id: 'detail.toast.deletedDesc' },
+          { number: inv.invoiceNumber },
+        ),
+      });
+      navigate('/');
+    } catch (err: any) {
+      toast.error(intl.formatMessage({ id: 'detail.toast.deleteError' }), {
+        description: err.message,
+      });
+    } finally {
+      setConfirmOpen(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -41,7 +65,7 @@ export default function InvoiceDetailPage() {
   const sym = inv.currencySymbol;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-[1280px] mx-auto">
       {/* TOP BAR — sticky directly below the app header.
        * <main> has p-4 sm:p-8 padding, so a plain `top: 0` sticky only
        * reaches main's CONTENT edge (below padding) — a 16/32px strip of
@@ -90,15 +114,25 @@ export default function InvoiceDetailPage() {
             </span>
           </button>
           {inv.status !== 'Paid' && (
-            <button
-              onClick={() => navigate(`/invoices/${id}/edit`)}
-              className="rounded-full bg-blue-500 text-white px-3.5 py-1.5 flex items-center gap-1.5 hover:bg-blue-600 transition-colors cursor-pointer"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-              <span className="text-[13px] font-semibold">
-                <FormattedMessage id="detail.editInvoice" />
-              </span>
-            </button>
+            <>
+              <button
+                onClick={() => setConfirmOpen(true)}
+                aria-label="Delete"
+                title={intl.formatMessage({ id: 'detail.delete' })}
+                className="rounded-full border border-gray-200 bg-white text-red-600 p-1.5 flex items-center justify-center hover:bg-red-50 transition-colors cursor-pointer"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => navigate(`/invoices/${id}/edit`)}
+                className="rounded-full bg-blue-500 text-white px-3.5 py-1.5 flex items-center gap-1.5 hover:bg-blue-600 transition-colors cursor-pointer"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                <span className="text-[13px] font-semibold">
+                  <FormattedMessage id="detail.editInvoice" />
+                </span>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -240,6 +274,49 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete confirm dialog */}
+      {confirmOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => !isDeleting && setConfirmOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-full max-w-sm rounded-xl bg-white shadow-xl border border-gray-200 p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-base font-semibold text-gray-900">
+              <FormattedMessage id="detail.deleteConfirm.title" />
+            </h2>
+            <p className="mt-2 text-[13px] text-gray-600">
+              <FormattedMessage
+                id="detail.deleteConfirm.body"
+                values={{ number: inv.invoiceNumber }}
+              />
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(false)}
+                disabled={isDeleting}
+                className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FormattedMessage id="detail.deleteConfirm.cancel" />
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="rounded-full bg-red-600 text-white px-4 py-1.5 text-[13px] font-semibold hover:bg-red-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FormattedMessage id="detail.deleteConfirm.confirm" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

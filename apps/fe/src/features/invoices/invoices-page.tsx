@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { FormattedMessage, useIntl } from 'react-intl';
+import { toast } from 'sonner';
+import { mutate as globalMutate } from 'swr';
 import { useInvoices } from '@/lib/swr';
+import { api } from '@/lib/api';
 import { formatDate, formatCurrency } from '@/lib/format';
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
@@ -19,6 +22,7 @@ import {
   ChevronDown,
   X,
   Check,
+  Trash2,
 } from 'lucide-react';
 import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
 
@@ -43,6 +47,35 @@ export default function InvoicesPage() {
   const toDate = searchParams.get('toDate') || '';
 
   const [searchInput, setSearchInput] = useState(keyword);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; number: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await api.invoices.remove(deleteTarget.id);
+      toast.success(intl.formatMessage({ id: 'detail.toast.deleted' }), {
+        description: intl.formatMessage(
+          { id: 'detail.toast.deletedDesc' },
+          { number: deleteTarget.number },
+        ),
+      });
+      // Revalidate every list cache so the row disappears immediately.
+      await globalMutate(
+        (key) => Array.isArray(key) && key[0] === 'invoices',
+        undefined,
+        { revalidate: true },
+      );
+      setDeleteTarget(null);
+    } catch (err: any) {
+      toast.error(intl.formatMessage({ id: 'detail.toast.deleteError' }), {
+        description: err.message,
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   const params: Record<string, string> = { page: String(page), pageSize: String(pageSize) };
   if (sortBy) params.sortBy = sortBy;
@@ -246,7 +279,7 @@ export default function InvoicesPage() {
         </div>
         <Link
           to="/invoices/new"
-          className="bg-blue-500 text-white rounded-full px-3.5 py-1.5 text-[13px] font-semibold shadow-sm flex items-center gap-1.5 hover:bg-blue-600 transition-colors shrink-0"
+          className="bg-blue-500 text-white rounded-full px-3.5 py-1.5 text-[13px] font-semibold shadow-sm flex items-center gap-1.5 hover:bg-blue-600 transition-colors shrink-0 cursor-pointer"
         >
           <Plus className="h-3.5 w-3.5" />
           <FormattedMessage id="invoices.newInvoice" />
@@ -293,7 +326,7 @@ export default function InvoicesPage() {
             </span>
             {(fromDate || toDate) && (
               <X
-                className="h-3.5 w-3.5 text-gray-400 hover:text-gray-700"
+                className="h-3.5 w-3.5 text-gray-400 hover:text-gray-700 cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
                   clearDateRange();
@@ -490,24 +523,42 @@ export default function InvoicesPage() {
                   </td>
                   <td className="px-[18px] text-right">
                     <div className="inline-flex items-center gap-1">
+                      {/* Edit + Delete are hidden for Paid invoices — same
+                          rule the server enforces. View stays on the right. */}
+                      {inv.status !== 'Paid' && (
+                        <>
+                          <Link
+                            to={`/invoices/${inv.invoiceId}/edit`}
+                            aria-label="Edit"
+                            className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                          <button
+                            type="button"
+                            aria-label="Delete"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteTarget({
+                                id: inv.invoiceId,
+                                number: inv.invoiceNumber,
+                              });
+                            }}
+                            className="text-gray-400 hover:text-red-600 p-1 cursor-pointer"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
                       <Link
                         to={`/invoices/${inv.invoiceId}`}
+                        aria-label="View"
                         className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Eye className="h-4 w-4" />
                       </Link>
-                      {/* Paid invoices are immutable on the server; hide the
-                          edit affordance to match the detail page behaviour. */}
-                      {inv.status !== 'Paid' && (
-                        <Link
-                          to={`/invoices/${inv.invoiceId}/edit`}
-                          className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Link>
-                      )}
                     </div>
                   </td>
                 </tr>
@@ -565,6 +616,49 @@ export default function InvoicesPage() {
         </div>
         )}
       </div>
+
+      {/* Delete confirm dialog — shared across rows, parameterized by deleteTarget */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => !isDeleting && setDeleteTarget(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-full max-w-sm rounded-xl bg-white shadow-xl border border-gray-200 p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-base font-semibold text-gray-900">
+              <FormattedMessage id="detail.deleteConfirm.title" />
+            </h2>
+            <p className="mt-2 text-[13px] text-gray-600">
+              <FormattedMessage
+                id="detail.deleteConfirm.body"
+                values={{ number: deleteTarget.number }}
+              />
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={isDeleting}
+                className="rounded-full border border-gray-200 bg-white px-4 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FormattedMessage id="detail.deleteConfirm.cancel" />
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="rounded-full bg-red-600 text-white px-4 py-1.5 text-[13px] font-semibold hover:bg-red-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FormattedMessage id="detail.deleteConfirm.confirm" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

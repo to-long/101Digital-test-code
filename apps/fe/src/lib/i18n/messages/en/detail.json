@@ -20,5 +20,13 @@
   "detail.paid": "Paid",
   "detail.outstanding": "Outstanding balance",
   "detail.notFound": "Invoice not found",
-  "detail.backToInvoices": "Back to invoices"
+  "detail.backToInvoices": "Back to invoices",
+  "detail.delete": "Delete",
+  "detail.deleteConfirm.title": "Delete this invoice?",
+  "detail.deleteConfirm.body": "Invoice {number} will be hidden from the list. This can't be undone from the UI.",
+  "detail.deleteConfirm.confirm": "Delete",
+  "detail.deleteConfirm.cancel": "Cancel",
+  "detail.toast.deleted": "Invoice deleted",
+  "detail.toast.deletedDesc": "{number} has been removed.",
+  "detail.toast.deleteError": "Failed to delete invoice"
 }
