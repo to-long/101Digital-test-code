@@ -42,6 +42,229 @@ All screens captured in both light and dark theme. To regenerate them locally: `
 
 ---
 
+## Architecture
+
+### System overview
+
+```mermaid
+flowchart LR
+    subgraph Browser
+        FE["React SPA<br/>Vite • Tailwind v4 • SWR<br/>Zustand • react-intl"]
+    end
+
+    subgraph Server["Backend (Bun)"]
+        Nest["NestJS 11<br/>Controllers + Guards"]
+        Svc["Services<br/>(auth, invoices)"]
+        Drz["Drizzle ORM"]
+    end
+
+    DB[("PostgreSQL 17<br/>users • invoices<br/>invoice_items")]
+    Swagger[/"Swagger UI<br/>/api/docs"/]
+
+    FE -->|"HTTPS · Bearer JWT<br/>(via Vite proxy in dev)"| Nest
+    Nest --> Svc
+    Svc --> Drz
+    Drz <--> DB
+    Nest -.exposes.-> Swagger
+
+    classDef fe fill:#dbeafe,stroke:#3b82f6,color:#0f172a;
+    classDef be fill:#dcfce7,stroke:#16a34a,color:#0f172a;
+    classDef db fill:#fef3c7,stroke:#d97706,color:#0f172a;
+    class FE fe;
+    class Nest,Svc,Drz be;
+    class DB db;
+```
+
+### Frontend module map
+
+```mermaid
+flowchart TB
+    subgraph App
+        Root["App.tsx<br/>(providers + router)"]
+        AppLayout["AppLayout<br/>(breadcrumb + sticky chrome)"]
+        Sidebar["Sidebar<br/>(collapse + nav)"]
+        Routes{Routes}
+    end
+
+    subgraph Providers
+        Theme["ThemeProvider<br/>(light/dark/system)"]
+        Locale["LocaleProvider<br/>(EN/VI/中)"]
+        SWRConfig["SWRConfig"]
+    end
+
+    subgraph Features["Invoice features"]
+        List["InvoicesPage<br/>(SWR list + filters + paging)"]
+        Detail["InvoiceDetailPage<br/>(view + delete)"]
+        Create["CreateInvoicePage<br/>(react-hook-form + Zod)"]
+        Edit["EditInvoicePage<br/>(optimistic update)"]
+    end
+
+    subgraph Lib
+        ApiTs["lib/api.ts<br/>(fetch wrapper + auth header)"]
+        SwrTs["lib/swr.ts<br/>(hooks: list, detail, mutate)"]
+        AuthStore["lib/auth.ts<br/>(Zustand + persist)"]
+        Shared["@simple-invoice/shared<br/>(types + Zod schemas)"]
+    end
+
+    Root --> Theme --> Locale --> SWRConfig --> Routes
+    Routes --> AppLayout --> Sidebar
+    Routes --> List & Detail & Create & Edit
+    List & Detail & Create & Edit --> SwrTs --> ApiTs
+    ApiTs --> AuthStore
+    Create & Edit --> Shared
+```
+
+### Authentication flow
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant FE as React (LoginPage)
+    participant Store as Zustand (auth)
+    participant BE as NestJS Auth
+    participant DB as PostgreSQL
+
+    User->>FE: enter email + password
+    FE->>BE: POST /api/auth/login
+    BE->>DB: SELECT user WHERE email=$1
+    DB-->>BE: { passwordHash, id, ... }
+    BE->>BE: bcrypt.compare(password, hash)
+    alt valid
+        BE->>BE: sign JWT (sub, email, exp)
+        BE-->>FE: 201 { accessToken, user }
+        FE->>Store: setAuth(token, user) → localStorage
+        FE->>User: redirect to /
+    else invalid
+        BE-->>FE: 401 Unauthorized
+        FE->>User: toast.error("Invalid credentials")
+    end
+
+    Note over FE,BE: Subsequent requests
+    FE->>BE: GET /api/invoices (Authorization: Bearer ...)
+    BE->>BE: JwtAuthGuard verifies signature + exp
+    BE-->>FE: 200 { data, paging }
+```
+
+### Create invoice — request flow
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Form as CreateInvoicePage
+    participant Zod as createInvoiceSchema (shared)
+    participant SWR as useCreateInvoice
+    participant BE as InvoicesController
+    participant Svc as InvoicesService
+    participant DB
+
+    User->>Form: fill fields + click Save
+    Form->>Zod: validate
+    alt invalid
+        Zod-->>Form: ZodError
+        Form->>User: inline field errors (i18n)
+    else valid
+        Form->>SWR: trigger(payload)
+        SWR->>BE: POST /api/invoices
+        BE->>Svc: create(dto, userId)
+        Svc->>Svc: check unique invoiceNumber<br/>+ dueDate >= invoiceDate
+        Svc->>Svc: calc subTotal / tax / total / balance
+        Svc->>DB: TX: INSERT invoice + INSERT line item
+        DB-->>Svc: inserted rows
+        Svc-->>BE: full invoice + items
+        BE-->>SWR: 201 invoice
+        SWR->>SWR: revalidate ['invoices', *]
+        SWR-->>Form: success
+        Form->>User: toast.success + navigate('/')
+    end
+```
+
+### Soft delete flow
+
+```mermaid
+flowchart TD
+    A[User clicks 🗑 icon] --> B{Status check<br/>in UI}
+    B -- Paid --> X[Icon hidden — no action]
+    B -- Draft/Pending --> C[Open confirm dialog]
+    C --> D{User confirms?}
+    D -- Cancel --> E[Dialog closes]
+    D -- Delete --> F[DELETE /api/invoices/:id]
+    F --> G{Server checks}
+    G -- not found --> H[404]
+    G -- already deleted --> H
+    G -- status = Paid --> I["400 'Paid invoices cannot be deleted'"]
+    G -- ok --> J["UPDATE invoices<br/>SET deleted_at = NOW()<br/>WHERE id = :id"]
+    J --> K[204 No Content]
+    K --> L[SWR revalidate lists]
+    L --> M["Row vanishes from list<br/>+ detail returns 404"]
+
+    classDef ok fill:#dcfce7,stroke:#16a34a;
+    classDef err fill:#fee2e2,stroke:#dc2626;
+    class K,M,L ok;
+    class H,I,X err;
+```
+
+### Invoice status state machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draft: POST /invoices<br/>(always saved as Draft)
+    Draft --> Pending: PUT (status=Pending)
+    Draft --> Paid: PUT (status=Paid)
+    Pending --> Paid: PUT (status=Paid)
+    Pending --> Overdue: dueDate < today<br/>(derived at read time)
+    Overdue --> Paid: PUT (status=Paid)
+
+    Draft --> Deleted: DELETE
+    Pending --> Deleted: DELETE
+    Overdue --> Deleted: DELETE
+    Paid --> Paid: ❌ PUT/DELETE rejected<br/>(400 — immutable)
+
+    Deleted: deleted_at IS NOT NULL<br/>(hidden from API)
+```
+
+### Data model
+
+```mermaid
+erDiagram
+    USERS ||--o{ INVOICES : creates
+    INVOICES ||--o{ INVOICE_ITEMS : has
+
+    USERS {
+        uuid id PK
+        varchar email UK
+        varchar password_hash
+        varchar fullname
+        timestamp created_at
+    }
+    INVOICES {
+        uuid invoice_id PK
+        varchar invoice_number UK
+        date invoice_date
+        date due_date
+        enum status "Draft|Pending|Paid"
+        varchar customer_name
+        varchar customer_email
+        numeric invoice_sub_total
+        numeric total_tax
+        numeric total_discount
+        numeric total_amount
+        numeric total_paid
+        numeric balance_amount
+        timestamp created_at
+        timestamp deleted_at "NULL = active"
+        uuid created_by FK
+    }
+    INVOICE_ITEMS {
+        uuid id PK
+        uuid invoice_id FK
+        varchar name
+        integer quantity
+        numeric rate
+    }
+```
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
