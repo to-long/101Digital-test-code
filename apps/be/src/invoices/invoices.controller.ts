@@ -66,4 +66,12 @@ export class InvoicesController {
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.invoicesService.softDelete(id);
   }
+
+  @Post(':id/restore')
+  @ApiOperation({ summary: 'Restore a soft-deleted invoice (clears deletedAt)' })
+  @ApiResponse({ status: 200, description: 'Invoice restored — returns the full invoice' })
+  @ApiResponse({ status: 404, description: 'Invoice not found' })
+  async restore(@Param('id', ParseUUIDPipe) id: string) {
+    return this.invoicesService.restore(id);
+  }
 }

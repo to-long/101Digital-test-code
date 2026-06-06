@@ -2,5 +2,6 @@
   "status.Draft": "草稿",
   "status.Pending": "待处理",
   "status.Paid": "已付款",
-  "status.Overdue": "逾期"
+  "status.Overdue": "逾期",
+  "status.Deleted": "已删除"
 }

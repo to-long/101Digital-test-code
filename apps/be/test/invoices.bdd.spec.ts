@@ -318,7 +318,7 @@ describe('Feature: Editing an invoice', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 describe('Feature: Soft-deleting an invoice', () => {
   describe('Scenario: deleting a Draft', () => {
-    test('Given a Draft invoice, when DELETE /invoices/:id, then it returns 204 and disappears from list + detail', async () => {
+    test('Given a Draft invoice, when DELETE /invoices/:id, then it returns 204, disappears from the default list, but is reachable via the deleted filter', async () => {
       // Given a freshly-created Draft invoice
       const created = await createDraftInvoice();
       const id = created.body.invoiceId;
@@ -333,14 +333,24 @@ describe('Feature: Soft-deleting an invoice', () => {
       // Then the API responds with 204 No Content
       expect(del.status).toBe(204);
 
-      // And subsequent detail lookups return 404
-      const detail = await fetch(`${BASE}/invoices/${id}`, { headers: auth() });
-      expect(detail.status).toBe(404);
-
-      // And the row no longer appears in the list under its number
+      // And the row no longer appears in the DEFAULT list (deletedAt filter)
       const list = await fetch(`${BASE}/invoices?keyword=${number}`, { headers: auth() });
       const { data } = await list.json();
       expect(data.some((inv: any) => inv.invoiceId === id)).toBeFalse();
+
+      // And the detail endpoint still returns it, but with displayStatus
+      // 'Deleted' so the recycle-bin view can show its data + restore action
+      const detail = await fetch(`${BASE}/invoices/${id}`, { headers: auth() });
+      expect(detail.status).toBe(200);
+      const body = await detail.json();
+      expect(body.status).toBe('Deleted');
+
+      // And the recycle-bin filter `?status=Deleted` lists it
+      const trash = await fetch(`${BASE}/invoices?status=Deleted&keyword=${number}`, {
+        headers: auth(),
+      });
+      const { data: trashData } = await trash.json();
+      expect(trashData.some((inv: any) => inv.invoiceId === id)).toBeTrue();
     });
   });
 
@@ -356,7 +366,7 @@ describe('Feature: Soft-deleting an invoice', () => {
   });
 
   describe('Scenario: deleting an already-deleted invoice (idempotency check)', () => {
-    test('Given an invoice that was just deleted, when DELETE is called again, then 404 is returned (not silent success)', async () => {
+    test('Given an invoice that was just deleted, when DELETE is called again, then 404 is returned (the soft-delete query filters it out)', async () => {
       // Given a freshly-deleted invoice
       const created = await createDraftInvoice();
       const id = created.body.invoiceId;
@@ -372,10 +382,83 @@ describe('Feature: Soft-deleting an invoice', () => {
         headers: auth(),
       });
 
-      // Then we get 404 — same as deleting an unknown id. Note: soft-delete
-      // queries filter on deletedAt IS NULL, so once gone the row is
-      // indistinguishable from a missing one.
+      // Then we get 404 — softDelete() filters on deletedAt IS NULL when
+      // looking up the row to mark, so a second call can't find it.
       expect(secondDelete.status).toBe(404);
+    });
+  });
+
+  describe('Scenario: restoring a deleted invoice', () => {
+    test('Given a deleted invoice, when POST /invoices/:id/restore, then deletedAt is cleared and the row returns to the default list', async () => {
+      // Given a deleted invoice
+      const created = await createDraftInvoice();
+      const id = created.body.invoiceId;
+      const number = created.body.invoiceNumber;
+      const del = await fetch(`${BASE}/invoices/${id}`, {
+        method: 'DELETE',
+        headers: auth(),
+      });
+      expect(del.status).toBe(204);
+
+      // When restore is called
+      const restore = await fetch(`${BASE}/invoices/${id}/restore`, {
+        method: 'POST',
+        headers: auth(),
+      });
+
+      // Then the response is 200 with the restored invoice
+      // (Nest returns 201 for @Post by default; we keep that.)
+      expect(restore.status).toBe(201);
+      const body = await restore.json();
+      expect(body.status).toBe('Draft'); // back to its DB status
+
+      // And it appears in the default list again
+      const list = await fetch(`${BASE}/invoices?keyword=${number}`, { headers: auth() });
+      const { data } = await list.json();
+      expect(data.some((inv: any) => inv.invoiceId === id)).toBeTrue();
+    });
+
+    test('Given an unknown id, when POST /restore, then 404 is returned', async () => {
+      const ghostId = '00000000-0000-0000-0000-000000000000';
+      const res = await fetch(`${BASE}/invoices/${ghostId}/restore`, {
+        method: 'POST',
+        headers: auth(),
+      });
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('Scenario: editing a deleted invoice is rejected', () => {
+    test('Given a deleted invoice, when PUT /invoices/:id, then 400 — must restore first', async () => {
+      // Given a deleted invoice
+      const created = await createDraftInvoice();
+      const id = created.body.invoiceId;
+      const del = await fetch(`${BASE}/invoices/${id}`, {
+        method: 'DELETE',
+        headers: auth(),
+      });
+      expect(del.status).toBe(204);
+
+      // When attempting to update it
+      const res = await fetch(`${BASE}/invoices/${id}`, {
+        method: 'PUT',
+        headers: auth(),
+        body: JSON.stringify({
+          customer: { fullname: 'X', email: 'x@x.com' },
+          invoiceDate: '2026-01-01',
+          dueDate: '2026-02-01',
+          currency: 'AUD',
+          status: 'Draft',
+          item: { name: 'X', quantity: 1, rate: 1 },
+          taxPercent: 0,
+          discount: 0,
+        }),
+      });
+
+      // Then the server refuses (rule mirrors the Paid immutability path)
+      expect(res.status).toBe(400);
+      const err = await res.json();
+      expect(err.message.toLowerCase()).toContain('deleted');
     });
   });
 });

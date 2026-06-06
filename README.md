@@ -218,8 +218,11 @@ stateDiagram-v2
     Pending --> Deleted: DELETE
     Overdue --> Deleted: DELETE
     Paid --> Paid: ❌ PUT/DELETE rejected<br/>(400 — immutable)
+    Deleted --> Draft: POST /restore<br/>(reverts to DB status)
+    Deleted --> Pending: POST /restore
+    Deleted --> Deleted: ❌ PUT rejected<br/>(400 — restore first)
 
-    Deleted: deleted_at IS NOT NULL<br/>(hidden from API)
+    Deleted: deleted_at IS NOT NULL<br/>(hidden from default list,<br/>visible via ?status=Deleted)
 ```
 
 ### Data model
@@ -384,7 +387,9 @@ Swagger UI: <http://localhost:4001/api/docs> (when the backend is running).
 | `GET` | `/api/invoices` | ✅ | List with search / status / date range / sort / pagination |
 | `GET` | `/api/invoices/:id` | ✅ | Invoice detail with line items |
 | `POST` | `/api/invoices` | ✅ | Create invoice (always saved as Draft) |
-| `PUT` | `/api/invoices/:id` | ✅ | Update invoice (400 if status = Paid) |
+| `PUT` | `/api/invoices/:id` | ✅ | Update invoice (400 if status = Paid or Deleted) |
+| `DELETE` | `/api/invoices/:id` | ✅ | Soft-delete (sets deletedAt; 400 if Paid) |
+| `POST` | `/api/invoices/:id/restore` | ✅ | Restore a soft-deleted invoice (clears deletedAt) |
 
 ## Available commands
 

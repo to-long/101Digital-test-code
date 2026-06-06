@@ -2,5 +2,6 @@
   "status.Draft": "Nháp",
   "status.Pending": "Chờ",
   "status.Paid": "Đã thanh toán",
-  "status.Overdue": "Quá hạn"
+  "status.Overdue": "Quá hạn",
+  "status.Deleted": "Đã xoá"
 }

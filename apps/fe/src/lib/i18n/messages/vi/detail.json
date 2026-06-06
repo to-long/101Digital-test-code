@@ -28,5 +28,9 @@
   "detail.deleteConfirm.cancel": "Huỷ",
   "detail.toast.deleted": "Đã xoá hoá đơn",
   "detail.toast.deletedDesc": "{number} đã được xoá.",
-  "detail.toast.deleteError": "Không thể xoá hoá đơn"
+  "detail.toast.deleteError": "Không thể xoá hoá đơn",
+  "detail.restore": "Khôi phục",
+  "detail.toast.restored": "Đã khôi phục hoá đơn",
+  "detail.toast.restoredDesc": "{number} đã trở lại danh sách.",
+  "detail.toast.restoreError": "Không thể khôi phục hoá đơn"
 }

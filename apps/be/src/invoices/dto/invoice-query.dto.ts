@@ -27,9 +27,9 @@ export class InvoiceQueryDto {
   @IsEnum(['ASC', 'DESC'])
   ordering?: 'ASC' | 'DESC' = 'DESC';
 
-  @ApiPropertyOptional({ enum: ['Draft', 'Pending', 'Paid', 'Overdue'] })
+  @ApiPropertyOptional({ enum: ['Draft', 'Pending', 'Paid', 'Overdue', 'Deleted'] })
   @IsOptional()
-  @IsEnum(['Draft', 'Pending', 'Paid', 'Overdue'])
+  @IsEnum(['Draft', 'Pending', 'Paid', 'Overdue', 'Deleted'])
   status?: string;
 
   @ApiPropertyOptional({ description: 'Search by invoice number or customer name' })

@@ -60,5 +60,7 @@ export const api = {
         body: JSON.stringify(data),
       }),
     remove: (id: string) => request<void>(`/invoices/${id}`, { method: 'DELETE' }),
+    restore: (id: string) =>
+      request<Invoice>(`/invoices/${id}/restore`, { method: 'POST' }),
   },
 };

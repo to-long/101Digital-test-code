@@ -34,15 +34,23 @@ export class InvoicesService {
 
     const conditions: ReturnType<typeof eq>[] = [];
 
-    // Soft-delete: always hide rows where deletedAt is set.
-    conditions.push(isNull(schema.invoices.deletedAt));
+    // Soft-delete handling:
+    //  status=Deleted → show ONLY soft-deleted rows (recycle-bin view).
+    //  everything else → hide soft-deleted rows.
+    if (status === 'Deleted') {
+      conditions.push(sql`${schema.invoices.deletedAt} IS NOT NULL`);
+    } else {
+      conditions.push(isNull(schema.invoices.deletedAt));
+    }
 
     if (status === 'Overdue') {
       // Match the display logic in mapInvoiceResponse: only Pending invoices
       // past their due date show as Overdue.
       conditions.push(eq(schema.invoices.status, 'Pending'));
       conditions.push(lt(schema.invoices.dueDate, sql`CURRENT_DATE`));
-    } else if (status) {
+    } else if (status && status !== 'Deleted') {
+      // 'Deleted' is handled above (deletedAt IS NOT NULL) — don't try to
+      // push it as a DB status, that column only knows Draft/Pending/Paid.
       conditions.push(eq(schema.invoices.status, status as 'Draft' | 'Pending' | 'Paid'));
     }
 
@@ -87,16 +95,43 @@ export class InvoicesService {
   }
 
   async findOne(id: string) {
+    // We DO return soft-deleted rows from this endpoint — the recycle-bin
+    // view needs to open their detail to restore them. The displayStatus
+    // ('Deleted') signals to the UI which actions are valid (restore vs
+    // edit/delete). If you want to hard-hide a row, drop it instead.
     const [invoice] = await this.db
       .select()
       .from(schema.invoices)
-      // Hide soft-deleted rows from detail lookups too.
-      .where(and(eq(schema.invoices.invoiceId, id), isNull(schema.invoices.deletedAt)))
+      .where(eq(schema.invoices.invoiceId, id))
       .limit(1);
 
     if (!invoice) throw new NotFoundException('Invoice not found');
 
     return this.mapInvoiceWithItems(invoice);
+  }
+
+  /**
+   * Restore a soft-deleted invoice by clearing its deletedAt timestamp.
+   * No-op if the row was never deleted (returns 200 with the current
+   * state — idempotent). 404 if the id is unknown.
+   */
+  async restore(id: string) {
+    const [existing] = await this.db
+      .select()
+      .from(schema.invoices)
+      .where(eq(schema.invoices.invoiceId, id))
+      .limit(1);
+
+    if (!existing) throw new NotFoundException('Invoice not found');
+
+    if (existing.deletedAt) {
+      await this.db
+        .update(schema.invoices)
+        .set({ deletedAt: null })
+        .where(eq(schema.invoices.invoiceId, id));
+    }
+
+    return this.findOne(id);
   }
 
   /**
@@ -196,6 +231,13 @@ export class InvoicesService {
 
     if (!existing) throw new NotFoundException('Invoice not found');
 
+    // A deleted invoice must be restored before it can be edited again,
+    // otherwise edits could silently bring an archived row "back to life"
+    // and surprise the user.
+    if (existing.deletedAt) {
+      throw new BadRequestException('Deleted invoices cannot be edited — restore first');
+    }
+
     if (existing.status === 'Paid') {
       throw new BadRequestException('Paid invoices cannot be modified');
     }
@@ -266,8 +308,14 @@ export class InvoicesService {
     today.setHours(0, 0, 0, 0);
     const dueDate = new Date(inv.dueDate);
 
-    const displayStatus: InvoiceDisplayStatus =
-      inv.status === 'Pending' && dueDate < today ? 'Overdue' : inv.status;
+    // Soft-deleted rows surface their state to the UI as 'Deleted' so the
+    // recycle-bin view can show a distinct badge + restore action. Overdue
+    // is still derived (Pending past-due) for non-deleted rows.
+    const displayStatus: InvoiceDisplayStatus = inv.deletedAt
+      ? 'Deleted'
+      : inv.status === 'Pending' && dueDate < today
+        ? 'Overdue'
+        : inv.status;
 
     return {
       invoiceId: inv.invoiceId,

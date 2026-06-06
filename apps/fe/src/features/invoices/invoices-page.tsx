@@ -15,6 +15,7 @@ import {
   Eye,
   Pencil,
   Plus,
+  RotateCcw,
   Search,
   Trash2,
   X,
@@ -31,6 +32,7 @@ const STATUS_COLORS: Record<InvoiceDisplayStatus, string> = {
   Pending: 'bg-amber-100 text-amber-700',
   Paid: 'bg-green-100 text-green-700',
   Draft: 'bg-gray-100 text-gray-600',
+  Deleted: 'bg-gray-200 text-gray-500 line-through',
 };
 
 export default function InvoicesPage() {
@@ -49,6 +51,25 @@ export default function InvoicesPage() {
   const [searchInput, setSearchInput] = useState(keyword);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; number: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  async function restoreInvoice(id: string, number: string) {
+    try {
+      await api.invoices.restore(id);
+      toast.success(intl.formatMessage({ id: 'detail.toast.restored' }), {
+        description: intl.formatMessage(
+          { id: 'detail.toast.restoredDesc' },
+          { number },
+        ),
+      });
+      await globalMutate((key) => Array.isArray(key) && key[0] === 'invoices', undefined, {
+        revalidate: true,
+      });
+    } catch (err: any) {
+      toast.error(intl.formatMessage({ id: 'detail.toast.restoreError' }), {
+        description: err.message,
+      });
+    }
+  }
 
   async function confirmDelete() {
     if (!deleteTarget) return;
@@ -311,6 +332,7 @@ export default function InvoicesPage() {
             <option value="Pending">{intl.formatMessage({ id: 'status.Pending' })}</option>
             <option value="Paid">{intl.formatMessage({ id: 'status.Paid' })}</option>
             <option value="Overdue">{intl.formatMessage({ id: 'status.Overdue' })}</option>
+            <option value="Deleted">{intl.formatMessage({ id: 'status.Deleted' })}</option>
           </select>
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
         </div>
@@ -524,9 +546,23 @@ export default function InvoicesPage() {
                   </td>
                   <td className="px-[18px] text-right">
                     <div className="inline-flex items-center gap-1">
-                      {/* Edit + Delete are hidden for Paid invoices — same
-                          rule the server enforces. View stays on the right. */}
-                      {inv.status !== 'Paid' && (
+                      {/* Action set depends on lifecycle state:
+                          - Deleted → only Restore + View (no edit/delete)
+                          - Paid    → only View (immutable on the server)
+                          - else    → Edit + Delete + View */}
+                      {inv.status === 'Deleted' ? (
+                        <button
+                          type="button"
+                          aria-label="Restore"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            restoreInvoice(inv.invoiceId, inv.invoiceNumber);
+                          }}
+                          className="text-gray-400 hover:text-blue-600 p-1 cursor-pointer"
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                        </button>
+                      ) : inv.status !== 'Paid' ? (
                         <>
                           <Link
                             to={`/invoices/${inv.invoiceId}/edit`}
@@ -551,7 +587,7 @@ export default function InvoicesPage() {
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </>
-                      )}
+                      ) : null}
                       <Link
                         to={`/invoices/${inv.invoiceId}`}
                         aria-label="View"

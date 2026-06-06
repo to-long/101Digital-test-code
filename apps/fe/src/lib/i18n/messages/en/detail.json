@@ -28,5 +28,9 @@
   "detail.deleteConfirm.cancel": "Cancel",
   "detail.toast.deleted": "Invoice deleted",
   "detail.toast.deletedDesc": "{number} has been removed.",
-  "detail.toast.deleteError": "Failed to delete invoice"
+  "detail.toast.deleteError": "Failed to delete invoice",
+  "detail.restore": "Restore",
+  "detail.toast.restored": "Invoice restored",
+  "detail.toast.restoredDesc": "{number} is back in the list.",
+  "detail.toast.restoreError": "Failed to restore invoice"
 }

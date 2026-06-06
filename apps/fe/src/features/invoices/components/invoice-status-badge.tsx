@@ -7,6 +7,7 @@ const statusVariant: Record<InvoiceDisplayStatus, 'muted' | 'warning' | 'success
   Pending: 'warning',
   Paid: 'success',
   Overdue: 'danger',
+  Deleted: 'muted',
 };
 
 export default function InvoiceStatusBadge({ status }: { status: InvoiceDisplayStatus }) {
