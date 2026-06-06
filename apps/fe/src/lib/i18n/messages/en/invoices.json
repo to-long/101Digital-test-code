@@ -4,6 +4,8 @@
   "invoices.newInvoice": "New Invoice",
   "invoices.searchPlaceholder": "Search by invoice number or customer name…",
   "invoices.allStatuses": "All Statuses",
+  "invoices.clearSearch": "Clear search",
+  "invoices.clearStatus": "Clear status filter",
   "invoices.allTime": "All Time",
   "invoices.from": "From {date}",
   "invoices.until": "Until {date}",

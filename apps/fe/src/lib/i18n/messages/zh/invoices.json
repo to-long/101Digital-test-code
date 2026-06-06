@@ -4,6 +4,8 @@
   "invoices.newInvoice": "新建发票",
   "invoices.searchPlaceholder": "按发票编号或客户名称搜索…",
   "invoices.allStatuses": "全部状态",
+  "invoices.clearSearch": "清除搜索",
+  "invoices.clearStatus": "清除状态筛选",
   "invoices.allTime": "全部时间",
   "invoices.from": "自 {date}",
   "invoices.until": "至 {date}",

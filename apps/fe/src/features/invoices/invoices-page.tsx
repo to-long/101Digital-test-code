@@ -145,6 +145,11 @@ export default function InvoicesPage() {
     updateParams({ keyword: searchInput });
   }
 
+  function clearKeyword() {
+    setSearchInput('');
+    updateParams({ keyword: '' });
+  }
+
   function handleSort(field: string) {
     // 3-state cycle: ASC → DESC → cleared → ASC → ...
     if (sortBy !== field) {
@@ -315,8 +320,19 @@ export default function InvoicesPage() {
             placeholder={intl.formatMessage({ id: 'invoices.searchPlaceholder' })}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full rounded-xl border px-3.5 py-2.5 pl-10 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+            className="w-full rounded-xl border px-3.5 py-2.5 pl-10 pr-10 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
           />
+          {searchInput && (
+            <button
+              type="button"
+              onClick={clearKeyword}
+              aria-label={intl.formatMessage({ id: 'invoices.clearSearch' })}
+              title={intl.formatMessage({ id: 'invoices.clearSearch' })}
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </form>
 
         <div className="relative">
@@ -325,7 +341,9 @@ export default function InvoicesPage() {
             onChange={(e) =>
               updateParams({ status: e.target.value === 'all' ? '' : e.target.value })
             }
-            className="appearance-none rounded-xl border px-3.5 py-2.5 pr-8 text-[13px] font-medium cursor-pointer outline-none focus:border-blue-400 bg-white"
+            className={`appearance-none rounded-xl border py-2.5 text-[13px] font-medium cursor-pointer outline-none focus:border-blue-400 bg-white ${
+              status ? 'pl-3.5 pr-14' : 'pl-3.5 pr-8'
+            }`}
           >
             <option value="all">{intl.formatMessage({ id: 'invoices.allStatuses' })}</option>
             <option value="Draft">{intl.formatMessage({ id: 'status.Draft' })}</option>
@@ -334,6 +352,17 @@ export default function InvoicesPage() {
             <option value="Overdue">{intl.formatMessage({ id: 'status.Overdue' })}</option>
             <option value="Deleted">{intl.formatMessage({ id: 'status.Deleted' })}</option>
           </select>
+          {status && (
+            <button
+              type="button"
+              onClick={() => updateParams({ status: '' })}
+              aria-label={intl.formatMessage({ id: 'invoices.clearStatus' })}
+              title={intl.formatMessage({ id: 'invoices.clearStatus' })}
+              className="absolute right-7 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
         </div>
 

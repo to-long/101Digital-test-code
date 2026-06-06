@@ -4,6 +4,8 @@
   "invoices.newInvoice": "Hoá đơn mới",
   "invoices.searchPlaceholder": "Tìm theo số hoá đơn hoặc tên khách hàng…",
   "invoices.allStatuses": "Tất cả trạng thái",
+  "invoices.clearSearch": "Xoá tìm kiếm",
+  "invoices.clearStatus": "Xoá bộ lọc trạng thái",
   "invoices.allTime": "Tất cả thời gian",
   "invoices.from": "Từ {date}",
   "invoices.until": "Đến {date}",
