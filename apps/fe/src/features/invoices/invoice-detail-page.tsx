@@ -5,7 +5,7 @@ import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
 import { ArrowLeft, Pencil, Printer, RotateCcw, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { mutate as globalMutate } from 'swr';
 import InvoiceStatusBadge from './components/invoice-status-badge';
@@ -13,12 +13,25 @@ import InvoiceStatusBadge from './components/invoice-status-badge';
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const intl = useIntl();
 
   const { data: inv, isLoading, error } = useInvoice(id);
   const { trigger: triggerDelete, isMutating: isDeleting } = useDeleteInvoice(id!);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+
+  // Back-button behavior: pop the history stack so the user returns to
+  // wherever they came from (list, search results, another detail page).
+  // If they landed here directly (refresh / deep link — location.key is
+  // 'default'), fall back to the list rather than leaving the app.
+  function goBack() {
+    if (location.key === 'default') {
+      navigate('/');
+    } else {
+      navigate(-1);
+    }
+  }
 
   async function handleRestore() {
     if (!inv) return;
@@ -56,7 +69,7 @@ export default function InvoiceDetailPage() {
           { number: inv.invoiceNumber },
         ),
       });
-      navigate('/');
+      goBack();
     } catch (err: any) {
       toast.error(intl.formatMessage({ id: 'detail.toast.deleteError' }), {
         description: err.message,
@@ -84,7 +97,7 @@ export default function InvoiceDetailPage() {
         <button
           type="button"
           className="text-blue-500 hover:underline text-sm mt-2 cursor-pointer"
-          onClick={() => navigate('/')}
+          onClick={goBack}
         >
           <FormattedMessage id="detail.backToInvoices" />
         </button>
@@ -109,7 +122,7 @@ export default function InvoiceDetailPage() {
         <div className="flex items-center gap-2 min-w-0">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={goBack}
             aria-label="Back"
             className="h-8 w-8 shrink-0 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
           >

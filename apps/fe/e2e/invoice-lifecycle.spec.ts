@@ -106,8 +106,9 @@ test.describe('Feature: Soft delete an invoice', () => {
     await page.locator('div[role="dialog"]').getByRole('button', { name: /delete/i }).click();
 
     // Then a toast confirms deletion and the user is on the list
+    // (history(-1) may carry query params from the prior search — match by pathname).
     await expect(page.getByText(/invoice deleted/i)).toBeVisible({ timeout: 5000 });
-    await page.waitForURL('/');
+    await page.waitForURL((url) => url.pathname === '/');
 
     // And the row is no longer findable
     await page.fill('input[placeholder*="Search"]', number);

@@ -17,13 +17,25 @@ import {
 import { ArrowLeft, Info, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { FormattedMessage, useIntl } from 'react-intl';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export default function CreateInvoicePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const intl = useIntl();
   const { trigger, isMutating } = useCreateInvoice();
+
+  // Cancel / back: pop the history stack so the user returns to wherever
+  // they came from. If they deep-linked here directly (location.key is
+  // 'default'), fall back to the list.
+  function goBack() {
+    if (location.key === 'default') {
+      navigate('/');
+    } else {
+      navigate(-1);
+    }
+  }
 
   const {
     register,
@@ -85,7 +97,7 @@ export default function CreateInvoicePage() {
         <div className="flex items-center gap-2 min-w-0">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={goBack}
             aria-label="Back"
             className="h-8 w-8 shrink-0 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
           >
@@ -103,7 +115,7 @@ export default function CreateInvoicePage() {
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={goBack}
             className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
           >
             <FormattedMessage id="common.cancel" />

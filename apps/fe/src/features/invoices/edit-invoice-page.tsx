@@ -145,7 +145,7 @@ export default function EditInvoicePage() {
         </p>
         <button
           type="button"
-          onClick={() => navigate('/')}
+          onClick={goBack}
           className="text-blue-500 hover:underline text-sm mt-2 cursor-pointer"
         >
           <FormattedMessage id="detail.backToInvoices" />
