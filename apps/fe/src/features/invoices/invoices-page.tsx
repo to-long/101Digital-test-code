@@ -1,18 +1,37 @@
-import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { useInvoices } from '@/lib/swr';
 import { formatDate, formatCurrency } from '@/lib/format';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import InvoiceStatusBadge from './components/invoice-status-badge';
-import { Plus, Search, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
+import { Calendar as CalendarPicker } from '@/components/ui/calendar';
+import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import type { DateRange } from 'react-day-picker';
+import {
+  Plus,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsUpDown,
+  ChevronUp,
+  Eye,
+  Pencil,
+  Calendar,
+  ChevronDown,
+  X,
+  Check,
+} from 'lucide-react';
 import type { InvoiceDisplayStatus } from '@simple-invoice/shared';
 
+const STATUS_COLORS: Record<InvoiceDisplayStatus, string> = {
+  Overdue: 'bg-red-100 text-red-700',
+  Pending: 'bg-amber-100 text-amber-700',
+  Paid: 'bg-green-100 text-green-700',
+  Draft: 'bg-gray-100 text-gray-600',
+};
+
 export default function InvoicesPage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const intl = useIntl();
 
   const page = parseInt(searchParams.get('page') || '1');
   const pageSize = parseInt(searchParams.get('pageSize') || '10');
@@ -20,6 +39,8 @@ export default function InvoicesPage() {
   const ordering = searchParams.get('ordering') || 'DESC';
   const status = searchParams.get('status') || '';
   const keyword = searchParams.get('keyword') || '';
+  const fromDate = searchParams.get('fromDate') || '';
+  const toDate = searchParams.get('toDate') || '';
 
   const [searchInput, setSearchInput] = useState(keyword);
 
@@ -28,11 +49,29 @@ export default function InvoicesPage() {
   if (ordering) params.ordering = ordering;
   if (status) params.status = status;
   if (keyword) params.keyword = keyword;
+  if (fromDate) params.fromDate = fromDate;
+  if (toDate) params.toDate = toDate;
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['invoices', params],
-    queryFn: () => api.invoices.list(params),
-  });
+  const { data, isLoading } = useInvoices(params);
+
+  // Delay skeleton appearance by 200ms — if data arrives faster, skip the
+  // skeleton entirely to avoid a perceived "flash". keepPreviousData on the
+  // SWR hook already prevents the table from emptying during refetches, so
+  // the skeleton only ever matters on the first hard load.
+  const [delayedShowSkeleton, setDelayedShowSkeleton] = useState(false);
+  const skeletonTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (isLoading || !data) {
+      skeletonTimer.current = setTimeout(() => setDelayedShowSkeleton(true), 200);
+    } else {
+      if (skeletonTimer.current) clearTimeout(skeletonTimer.current);
+      setDelayedShowSkeleton(false);
+    }
+    return () => {
+      if (skeletonTimer.current) clearTimeout(skeletonTimer.current);
+    };
+  }, [isLoading, data]);
+  const showSkeleton = (isLoading || !data) && delayedShowSkeleton;
 
   function updateParams(updates: Record<string, string>) {
     const next = new URLSearchParams(searchParams);
@@ -40,7 +79,12 @@ export default function InvoicesPage() {
       if (v) next.set(k, v);
       else next.delete(k);
     }
-    if (!updates.page) next.set('page', '1');
+    // Reset to page 1 when other params change; don't put page=1 in URL
+    if (!updates.page) {
+      next.delete('page');
+    } else if (updates.page === '1') {
+      next.delete('page');
+    }
     setSearchParams(next);
   }
 
@@ -50,83 +94,346 @@ export default function InvoicesPage() {
   }
 
   function handleSort(field: string) {
-    if (sortBy === field) {
-      updateParams({ sortBy: field, ordering: ordering === 'ASC' ? 'DESC' : 'ASC' });
-    } else {
+    // 3-state cycle: ASC → DESC → cleared → ASC → ...
+    if (sortBy !== field) {
       updateParams({ sortBy: field, ordering: 'ASC' });
+    } else if (ordering === 'ASC') {
+      updateParams({ sortBy: field, ordering: 'DESC' });
+    } else {
+      // Third click clears the sort entirely
+      updateParams({ sortBy: '', ordering: '' });
     }
   }
 
+  // Date range popover with calendar picker
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const datePickerRef = useRef<HTMLDivElement>(null);
+
+  const parsedRange: DateRange | undefined =
+    fromDate || toDate
+      ? {
+          from: fromDate ? new Date(fromDate) : undefined,
+          to: toDate ? new Date(toDate) : undefined,
+        }
+      : undefined;
+  const [draftRange, setDraftRange] = useState<DateRange | undefined>(parsedRange);
+
+  useEffect(() => {
+    setDraftRange(parsedRange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromDate, toDate]);
+
+  useEffect(() => {
+    if (!datePickerOpen) return;
+    function onClick(e: MouseEvent) {
+      if (datePickerRef.current && !datePickerRef.current.contains(e.target as Node)) {
+        setDatePickerOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [datePickerOpen]);
+
+  function toIso(d: Date | undefined): string {
+    return d ? format(d, 'yyyy-MM-dd') : '';
+  }
+
+  function applyDateRange() {
+    updateParams({
+      fromDate: toIso(draftRange?.from),
+      toDate: toIso(draftRange?.to),
+    });
+    setDatePickerOpen(false);
+  }
+
+  function clearDateRange() {
+    setDraftRange(undefined);
+    updateParams({ fromDate: '', toDate: '' });
+    setDatePickerOpen(false);
+  }
+
+  function applyPreset(from: Date, to: Date) {
+    setDraftRange({ from, to });
+    updateParams({ fromDate: toIso(from), toDate: toIso(to) });
+    setDatePickerOpen(false);
+  }
+
+  const today = new Date();
+  const PRESETS = [
+    { labelKey: 'invoices.dateRange.preset.today', from: today, to: today },
+    { labelKey: 'invoices.dateRange.preset.last7', from: subDays(today, 6), to: today },
+    { labelKey: 'invoices.dateRange.preset.last30', from: subDays(today, 29), to: today },
+    { labelKey: 'invoices.dateRange.preset.thisMonth', from: startOfMonth(today), to: today },
+    {
+      labelKey: 'invoices.dateRange.preset.lastMonth',
+      from: startOfMonth(subMonths(today, 1)),
+      to: endOfMonth(subMonths(today, 1)),
+    },
+  ];
+
+  function dateRangeLabel(): string {
+    if (fromDate && toDate) {
+      const from = new Date(fromDate);
+      const to = new Date(toDate);
+      const sameYear = from.getFullYear() === to.getFullYear();
+      const sameMonth = sameYear && from.getMonth() === to.getMonth();
+      const thisYear = to.getFullYear() === new Date().getFullYear();
+      if (sameMonth) {
+        return thisYear
+          ? `${format(from, 'MMM d')} – ${format(to, 'd')}`
+          : `${format(from, 'MMM d')} – ${format(to, 'd, yyyy')}`;
+      }
+      if (sameYear) {
+        return thisYear
+          ? `${format(from, 'MMM d')} – ${format(to, 'MMM d')}`
+          : `${format(from, 'MMM d')} – ${format(to, 'MMM d, yyyy')}`;
+      }
+      return `${format(from, 'MMM d, yyyy')} – ${format(to, 'MMM d, yyyy')}`;
+    }
+    if (fromDate)
+      return intl.formatMessage(
+        { id: 'invoices.from' },
+        { date: format(new Date(fromDate), 'MMM d, yyyy') },
+      );
+    if (toDate)
+      return intl.formatMessage(
+        { id: 'invoices.until' },
+        { date: format(new Date(toDate), 'MMM d, yyyy') },
+      );
+    return intl.formatMessage({ id: 'invoices.allTime' });
+  }
+
+  function SortIcon({ field }: { field: string }) {
+    if (sortBy !== field) return <ChevronsUpDown className="h-4 w-4 text-gray-400" />;
+    return ordering === 'ASC'
+      ? <ChevronUp className="h-4 w-4 text-blue-500" />
+      : <ChevronDown className="h-4 w-4 text-blue-500" />;
+  }
+
   const totalPages = data ? Math.ceil(data.paging.total / pageSize) : 0;
+  const totalItems = data?.paging.total ?? 0;
+  const showFrom = (page - 1) * pageSize + 1;
+  const showTo = Math.min(page * pageSize, totalItems);
+
+  function getPageNumbers(): (number | 'ellipsis')[] {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const pages: (number | 'ellipsis')[] = [1];
+    if (page > 3) pages.push('ellipsis');
+    const start = Math.max(2, page - 1);
+    const end = Math.min(totalPages - 1, page + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (page < totalPages - 2) pages.push('ellipsis');
+    pages.push(totalPages);
+    return pages;
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold">Invoices</h1>
-        <Button onClick={() => navigate('/invoices/new')}>
-          <Plus className="h-4 w-4" /> New Invoice
-        </Button>
+    <div className="flex flex-col h-[calc(100vh-6rem)] sm:h-[calc(100vh-8rem)]">
+      {/* TOP SECTION */}
+      <div className="flex justify-between items-center mb-5 shrink-0">
+        <div>
+          <h1 className="text-[32px] font-semibold leading-tight">
+            <FormattedMessage id="invoices.title" />
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            <FormattedMessage id="invoices.subtitle" />
+          </p>
+        </div>
+        <Link
+          to="/invoices/new"
+          className="bg-blue-500 text-white rounded-full px-[18px] py-2.5 text-sm font-semibold shadow flex items-center gap-2 hover:bg-blue-600 transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+          <FormattedMessage id="invoices.newInvoice" />
+        </Link>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <form onSubmit={handleSearch} className="flex gap-2 flex-1">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by invoice number or customer..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Button type="submit" variant="secondary">Search</Button>
+      {/* SEARCH / FILTER BAR */}
+      <div className="rounded-xl border shadow-sm bg-white p-3.5 flex items-center gap-2.5 mb-5 shrink-0">
+        <form onSubmit={handleSearch} className="flex-1 relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder={intl.formatMessage({ id: 'invoices.searchPlaceholder' })}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="w-full rounded-xl border px-3.5 py-2.5 pl-10 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+          />
         </form>
-        <Select value={status} onValueChange={(v) => updateParams({ status: v === 'all' ? '' : v })}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="All statuses" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="Draft">Draft</SelectItem>
-            <SelectItem value="Pending">Pending</SelectItem>
-            <SelectItem value="Paid">Paid</SelectItem>
-            <SelectItem value="Overdue">Overdue</SelectItem>
-          </SelectContent>
-        </Select>
+
+        <div className="relative">
+          <select
+            value={status || 'all'}
+            onChange={(e) => updateParams({ status: e.target.value === 'all' ? '' : e.target.value })}
+            className="appearance-none rounded-xl border px-3.5 py-2.5 pr-8 text-[13px] font-medium cursor-pointer outline-none focus:border-blue-400 bg-white"
+          >
+            <option value="all">{intl.formatMessage({ id: 'invoices.allStatuses' })}</option>
+            <option value="Draft">{intl.formatMessage({ id: 'status.Draft' })}</option>
+            <option value="Pending">{intl.formatMessage({ id: 'status.Pending' })}</option>
+            <option value="Paid">{intl.formatMessage({ id: 'status.Paid' })}</option>
+            <option value="Overdue">{intl.formatMessage({ id: 'status.Overdue' })}</option>
+          </select>
+          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+        </div>
+
+        <div className="relative" ref={datePickerRef}>
+          <button
+            type="button"
+            onClick={() => setDatePickerOpen((v) => !v)}
+            className="rounded-xl border bg-white px-3.5 py-2.5 flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors"
+          >
+            <Calendar className="h-4 w-4 text-gray-400" />
+            <span className="text-[13px] font-medium text-gray-800 whitespace-nowrap">
+              {dateRangeLabel()}
+            </span>
+            {(fromDate || toDate) && (
+              <X
+                className="h-3.5 w-3.5 text-gray-400 hover:text-gray-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearDateRange();
+                }}
+              />
+            )}
+          </button>
+
+          {datePickerOpen && (
+            <div className="absolute right-0 top-full mt-2 z-30 rounded-xl border border-gray-200 bg-white shadow-lg flex">
+              {/* Presets */}
+              <div className="border-r border-gray-200 p-1.5 flex flex-col gap-0.5 w-28">
+                {PRESETS.map((preset) => (
+                  <button
+                    key={preset.labelKey}
+                    type="button"
+                    onClick={() => applyPreset(preset.from, preset.to)}
+                    className="text-left text-[12px] text-gray-700 hover:bg-gray-100 rounded-md px-2.5 py-1.5 cursor-pointer transition-colors"
+                  >
+                    <FormattedMessage id={preset.labelKey} />
+                  </button>
+                ))}
+                <div className="border-t border-gray-200 my-0.5" />
+                <button
+                  type="button"
+                  onClick={clearDateRange}
+                  className="text-left text-[12px] text-gray-700 hover:bg-gray-100 rounded-md px-2.5 py-1.5 cursor-pointer transition-colors"
+                >
+                  <FormattedMessage id="invoices.allTime" />
+                </button>
+              </div>
+
+              {/* Calendar + footer */}
+              <div className="p-2.5 flex flex-col gap-2.5">
+                <CalendarPicker
+                  mode="range"
+                  numberOfMonths={1}
+                  selected={draftRange}
+                  onSelect={setDraftRange}
+                />
+                <div className="border-t border-gray-200 pt-2 flex items-center justify-between gap-2">
+                  <div className="text-[11px] text-gray-500">
+                    {draftRange?.from && draftRange?.to
+                      ? `${format(draftRange.from, 'MMM d')} – ${format(draftRange.to, 'MMM d, yyyy')}`
+                      : draftRange?.from
+                        ? `From ${format(draftRange.from, 'MMM d, yyyy')}`
+                        : 'Select a date range'}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDatePickerOpen(false)}
+                      aria-label="Cancel"
+                      title="Cancel"
+                      className="h-8 w-8 inline-flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={applyDateRange}
+                      disabled={!draftRange?.from}
+                      aria-label="Apply"
+                      title="Apply"
+                      className="h-8 w-8 inline-flex items-center justify-center rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Check className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-lg border bg-white overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-gray-50/50">
-              <th className="px-4 py-3 text-left font-medium">Invoice #</th>
-              <th className="px-4 py-3 text-left font-medium">Customer</th>
-              <th className="px-4 py-3 text-left font-medium cursor-pointer" onClick={() => handleSort('invoiceDate')}>
-                <span className="inline-flex items-center gap-1">
-                  Invoice Date <ArrowUpDown className="h-3 w-3" />
+      {/* DATA TABLE */}
+      <div className="rounded-xl border shadow-sm bg-white flex-1 min-h-0 overflow-auto">
+        <table className="w-full min-w-[900px]">
+          <thead className="sticky top-0 z-20">
+            <tr className="h-12 border-b">
+              {/* Every <th> gets its own bg — putting bg only on <tr> doesn't
+                  paint the sticky cells, so body content leaks through on
+                  scroll. The Invoice # column needs a higher z-index because
+                  it's ALSO sticky horizontally. */}
+              <th className="px-[18px] text-left w-40 sticky left-0 z-30 bg-[#FAFAFA] border-b border-gray-200">
+                <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <FormattedMessage id="invoices.column.invoiceNumber" />
                 </span>
               </th>
-              <th className="px-4 py-3 text-left font-medium cursor-pointer" onClick={() => handleSort('dueDate')}>
-                <span className="inline-flex items-center gap-1">
-                  Due Date <ArrowUpDown className="h-3 w-3" />
+              <th className="px-[18px] text-left bg-[#FAFAFA] border-b border-gray-200">
+                <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <FormattedMessage id="invoices.column.customer" />
                 </span>
               </th>
-              <th className="px-4 py-3 text-right font-medium cursor-pointer" onClick={() => handleSort('totalAmount')}>
-                <span className="inline-flex items-center gap-1 justify-end">
-                  Total <ArrowUpDown className="h-3 w-3" />
+              <th
+                className="px-[18px] text-left w-[140px] cursor-pointer select-none bg-[#FAFAFA] border-b border-gray-200"
+                onClick={() => handleSort('invoiceDate')}
+              >
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <FormattedMessage id="invoices.column.invoiceDate" />
+                  <SortIcon field="invoiceDate" />
                 </span>
               </th>
-              <th className="px-4 py-3 text-left font-medium">Status</th>
+              <th
+                className="px-[18px] text-left w-[140px] cursor-pointer select-none bg-[#FAFAFA] border-b border-gray-200"
+                onClick={() => handleSort('dueDate')}
+              >
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <FormattedMessage id="invoices.column.dueDate" />
+                  <SortIcon field="dueDate" />
+                </span>
+              </th>
+              <th
+                className="px-[18px] text-right w-[140px] cursor-pointer select-none bg-[#FAFAFA] border-b border-gray-200"
+                onClick={() => handleSort('totalAmount')}
+              >
+                <span className="inline-flex items-center gap-1 justify-end text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <FormattedMessage id="invoices.column.total" />
+                  <SortIcon field="totalAmount" />
+                </span>
+              </th>
+              <th className="px-[18px] text-center w-[160px] bg-[#FAFAFA] border-b border-gray-200">
+                <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <FormattedMessage id="invoices.column.status" />
+                </span>
+              </th>
+              <th className="px-[18px] text-right w-[100px] bg-[#FAFAFA] border-b border-gray-200">
+                <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  <FormattedMessage id="common.actions" />
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b">
-                  {Array.from({ length: 6 }).map((_, j) => (
-                    <td key={j} className="px-4 py-3">
+            {showSkeleton ? (
+              Array.from({ length: pageSize }).map((_, i) => (
+                <tr key={i} className="h-16 border-b group bg-white">
+                  {Array.from({ length: 7 }).map((_, j) => (
+                    <td
+                      key={j}
+                      className={`px-[18px] ${j === 0 ? 'sticky left-0 z-10 bg-white' : ''}`}
+                    >
                       <div className="h-4 bg-gray-200 rounded animate-pulse" />
                     </td>
                   ))}
@@ -134,26 +441,62 @@ export default function InvoicesPage() {
               ))
             ) : data?.data.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
-                  No invoices found
+                <td colSpan={7} className="px-[18px] py-12 text-center text-gray-400 text-sm">
+                  <FormattedMessage id="invoices.empty" />
                 </td>
               </tr>
             ) : (
               data?.data.map((inv) => (
                 <tr
                   key={inv.invoiceId}
-                  className="border-b hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => navigate(`/invoices/${inv.invoiceId}`)}
+                  className="h-16 border-b group bg-white hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-4 py-3 font-medium text-primary">{inv.invoiceNumber}</td>
-                  <td className="px-4 py-3">{inv.customer.fullname}</td>
-                  <td className="px-4 py-3">{formatDate(inv.invoiceDate)}</td>
-                  <td className="px-4 py-3">{formatDate(inv.dueDate)}</td>
-                  <td className="px-4 py-3 text-right font-mono">
-                    {formatCurrency(inv.totalAmount, inv.currencySymbol)}
+                  {/* z-10: above other body cells (horizontal sticky),
+                      below thead (which is z-20 / z-30). */}
+                  <td className="px-[18px] sticky left-0 z-10 bg-white group-hover:bg-gray-50 transition-colors">
+                    <span className="text-[13px] font-semibold">{inv.invoiceNumber}</span>
                   </td>
-                  <td className="px-4 py-3">
-                    <InvoiceStatusBadge status={inv.status as InvoiceDisplayStatus} />
+                  <td className="px-[18px]">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">{inv.customer.fullname}</span>
+                      <span className="text-[11px] text-gray-400">{inv.customer.email}</span>
+                    </div>
+                  </td>
+                  <td className="px-[18px]">
+                    <span className="text-[13px] text-gray-800">{formatDate(inv.invoiceDate)}</span>
+                  </td>
+                  <td className="px-[18px]">
+                    <span className="text-[13px] text-gray-800">{formatDate(inv.dueDate)}</span>
+                  </td>
+                  <td className="px-[18px] text-right">
+                    <span className="text-sm font-semibold">
+                      {formatCurrency(inv.totalAmount, inv.currencySymbol)}
+                    </span>
+                  </td>
+                  <td className="px-[18px] text-center">
+                    <span
+                      className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${STATUS_COLORS[inv.status as InvoiceDisplayStatus] || 'bg-gray-100 text-gray-600'}`}
+                    >
+                      <FormattedMessage id={`status.${inv.status}`} defaultMessage={inv.status} />
+                    </span>
+                  </td>
+                  <td className="px-[18px] text-right">
+                    <div className="inline-flex items-center gap-1">
+                      <Link
+                        to={`/invoices/${inv.invoiceId}`}
+                        className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                      <Link
+                        to={`/invoices/${inv.invoiceId}/edit`}
+                        className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -162,32 +505,54 @@ export default function InvoicesPage() {
         </table>
       </div>
 
-      {/* Pagination */}
-      {data && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, data.paging.total)} of {data.paging.total}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+      {/* PAGINATION — reserved space (h-8 mt-4) so layout doesn't jump on first load */}
+      <div className="min-h-8 mt-4 shrink-0">
+        {data && totalPages > 0 && (
+        <div className="flex justify-between items-center">
+          <span className="text-xs text-gray-500">
+            <FormattedMessage
+              id="invoices.pagination.showing"
+              values={{ from: showFrom, to: showTo, total: totalItems }}
+            />
+          </span>
+          <div className="flex items-center gap-1">
+            <button
               disabled={page <= 1}
               onClick={() => updateParams({ page: String(page - 1) })}
+              className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-800 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
             >
-              <ChevronLeft className="h-4 w-4" /> Prev
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            {getPageNumbers().map((p, i) =>
+              p === 'ellipsis' ? (
+                <span key={`e-${i}`} className="w-8 h-8 flex items-center justify-center text-[13px] text-gray-400">
+                  &hellip;
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  onClick={() => updateParams({ page: String(p) })}
+                  className={`w-8 h-8 flex items-center justify-center rounded-xl border text-[13px] cursor-pointer transition-colors ${
+                    p === page
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'bg-white text-gray-800 border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {p}
+                </button>
+              ),
+            )}
+            <button
               disabled={page >= totalPages}
               onClick={() => updateParams({ page: String(page + 1) })}
+              className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-800 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
             >
-              Next <ChevronRight className="h-4 w-4" />
-            </Button>
+              <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

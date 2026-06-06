@@ -1,31 +1,66 @@
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createInvoiceSchema, type CreateInvoiceInput, CURRENCIES, CURRENCY_SYMBOLS } from '@simple-invoice/shared';
-import { useCreateInvoice } from '@/lib/swr';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Info } from 'lucide-react';
+import {
+  updateInvoiceSchema,
+  type UpdateInvoiceInput,
+  CURRENCIES,
+  CURRENCY_SYMBOLS,
+  INVOICE_DB_STATUSES,
+  type InvoiceDbStatus,
+} from '@simple-invoice/shared';
+import { useInvoice, useUpdateInvoice } from '@/lib/swr';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ArrowLeft, Check, Info } from 'lucide-react';
 
-export default function CreateInvoicePage() {
+export default function EditInvoicePage() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { trigger, isMutating } = useCreateInvoice();
+
+  const { data: invoice, isLoading: isLoadingInvoice } = useInvoice(id);
+  const { trigger, isMutating } = useUpdateInvoice(id!);
 
   const {
     register,
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
-  } = useForm<CreateInvoiceInput>({
-    resolver: zodResolver(createInvoiceSchema),
-    defaultValues: {
-      taxPercent: 10,
-      discount: 0,
-      currency: 'AUD',
-      item: { quantity: 1, rate: 0 },
-    },
+  } = useForm<UpdateInvoiceInput>({
+    resolver: zodResolver(updateInvoiceSchema),
+    values: invoice
+      ? {
+          customer: {
+            fullname: invoice.customer.fullname,
+            email: invoice.customer.email,
+            mobileNumber: invoice.customer.mobileNumber ?? undefined,
+            address: invoice.customer.address ?? undefined,
+          },
+          invoiceDate: invoice.invoiceDate,
+          dueDate: invoice.dueDate,
+          currency: invoice.currency,
+          description: invoice.description ?? undefined,
+          status: (invoice.status === 'Overdue' ? 'Pending' : invoice.status) as InvoiceDbStatus,
+          item: {
+            name: invoice.items[0]?.name ?? '',
+            quantity: invoice.items[0]?.quantity ?? 1,
+            rate: invoice.items[0]?.rate ?? 0,
+          },
+          taxPercent:
+            invoice.invoiceSubTotal > 0
+              ? Math.round((invoice.totalTax / invoice.invoiceSubTotal) * 100 * 100) / 100
+              : 10,
+          discount: invoice.totalDiscount,
+        }
+      : undefined,
   });
 
   const quantity = watch('item.quantity') || 0;
@@ -33,21 +68,22 @@ export default function CreateInvoicePage() {
   const taxPercent = watch('taxPercent') || 0;
   const discount = watch('discount') || 0;
   const currency = watch('currency') || 'AUD';
+  const status = watch('status') || 'Draft';
   const sym = CURRENCY_SYMBOLS[currency as keyof typeof CURRENCY_SYMBOLS] || '$';
 
   const subTotal = quantity * rate;
   const taxAmount = subTotal * (taxPercent / 100);
   const totalAmount = subTotal + taxAmount - discount;
 
-  async function onSubmit(data: CreateInvoiceInput) {
+  async function onSubmit(data: UpdateInvoiceInput) {
     try {
       await trigger(data);
-      toast.success('Invoice created', {
-        description: `${data.invoiceNumber} saved as Draft.`,
+      toast.success('Invoice updated', {
+        description: `${invoice?.invoiceNumber ?? 'Invoice'} saved successfully.`,
       });
-      navigate('/');
+      navigate(`/invoices/${id}`);
     } catch (err: any) {
-      toast.error('Failed to create invoice', {
+      toast.error('Failed to update invoice', {
         description: err.message || 'Please try again.',
       });
     }
@@ -59,6 +95,32 @@ export default function CreateInvoicePage() {
     return <p className="text-[11px] text-red-600 mt-0.5">{err.message as string}</p>;
   }
 
+  if (isLoadingInvoice) {
+    return (
+      <div className="space-y-4 max-w-5xl mx-auto">
+        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+        <div className="h-64 bg-gray-200 rounded animate-pulse" />
+      </div>
+    );
+  }
+
+  if (!invoice) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Invoice not found</p>
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="text-blue-500 hover:underline text-sm mt-2"
+        >
+          Back to invoices
+        </button>
+      </div>
+    );
+  }
+
+  const isPaid = invoice.status === 'Paid';
+
   return (
     <div className="space-y-4">
       {/* TOP BAR */}
@@ -66,22 +128,22 @@ export default function CreateInvoicePage() {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate(`/invoices/${id}`)}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4 text-gray-600" />
           </button>
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold">Create Invoice</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold">Edit Invoice</h1>
             <p className="hidden md:block text-[13px] text-gray-500">
-              New invoices are saved as Draft. Total amount is calculated by the server.
+              Update the invoice details below. Total amount is recalculated by the server on save.
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate(`/invoices/${id}`)}
             className="rounded-full border border-gray-300 bg-white px-[18px] py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
           >
             Cancel
@@ -89,17 +151,17 @@ export default function CreateInvoicePage() {
           <button
             type="button"
             onClick={handleSubmit(onSubmit)}
-            disabled={isMutating}
+            disabled={isMutating || isPaid}
             className="flex items-center gap-2 rounded-full bg-blue-500 px-[18px] py-2.5 text-sm font-semibold text-white hover:bg-blue-600 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
-            <Save className="h-4 w-4" />
-            {isMutating ? 'Saving...' : 'Save'}
+            <Check className="h-4 w-4" />
+            {isMutating ? 'Updating...' : 'Update'}
           </button>
         </div>
       </div>
 
       {/* TWO-COLUMN LAYOUT */}
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         {/* LEFT COLUMN */}
         <div className="flex-1 flex flex-col gap-3">
           {/* Customer Card */}
@@ -157,11 +219,10 @@ export default function CreateInvoicePage() {
                   Invoice number <span className="text-red-500">*</span>
                 </label>
                 <input
-                  {...register('invoiceNumber')}
-                  placeholder="INV-001"
-                  className="w-full rounded-xl border border-gray-300 py-2.5 px-3.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  value={invoice.invoiceNumber}
+                  disabled
+                  className="w-full rounded-xl border border-gray-300 py-2.5 px-3.5 text-sm bg-gray-100 text-gray-500"
                 />
-                <FieldError name="invoiceNumber" />
               </div>
               <div className="space-y-1">
                 <label className="text-[13px] font-medium text-gray-700">
@@ -183,11 +244,25 @@ export default function CreateInvoicePage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1 col-span-1 sm:col-span-2">
-                <label className="text-[13px] font-medium text-gray-700">Status</label>
-                <div className="w-full rounded-xl border border-gray-300 bg-[#F5F5F5] py-2.5 px-3.5 text-sm text-gray-700">
-                  Draft
-                </div>
+              <div className="space-y-1 col-span-2">
+                <label className="text-[13px] font-medium text-gray-700">
+                  Status <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  value={status}
+                  onValueChange={(v) => setValue('status', v as InvoiceDbStatus)}
+                >
+                  <SelectTrigger className="w-full rounded-xl border border-gray-300 py-2.5 px-3.5 text-sm h-auto">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INVOICE_DB_STATUSES.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1">
                 <label className="text-[13px] font-medium text-gray-700">
@@ -324,22 +399,23 @@ export default function CreateInvoicePage() {
             </div>
           </div>
 
-          {/* Draft Info Alert */}
+          {/* Info Alert */}
           <div className="rounded-xl bg-blue-50 border border-blue-200 p-5">
             <div className="flex items-start gap-3">
               <Info className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-blue-900">
-                  Invoice will be saved as Draft
+                  You are editing an existing invoice
                 </p>
                 <p className="text-sm text-blue-800 mt-1">
-                  You can review and update the invoice before sending it to your customer. The total amount will be calculated by the server.
+                  Changing the status will take effect immediately after saving. If status is set to
+                  Paid, the invoice can no longer be modified.
                 </p>
               </div>
             </div>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
