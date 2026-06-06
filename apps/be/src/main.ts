@@ -10,7 +10,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL || 'http://localhost:3041',
     credentials: true,
   });
   app.useGlobalPipes(
@@ -32,7 +32,8 @@ async function bootstrap() {
   const doc = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, doc);
 
-  const port = process.env.PORT || 3000;
+  // Use BACKEND_PORT to avoid collision with PORT from process supervisors / preview servers
+  const port = process.env.BACKEND_PORT || process.env.BE_PORT || 4001;
   await app.listen(port);
   console.log(`Server running on http://localhost:${port}`);
   console.log(`Swagger docs at http://localhost:${port}/api/docs`);

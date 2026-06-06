@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from 'bun:test';
 
-const BASE = 'http://localhost:3000/api';
+const BASE = `http://localhost:${process.env.PORT || 4001}/api`;
 let token: string;
 
 beforeAll(async () => {

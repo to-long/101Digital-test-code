@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
+import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { InvoiceQueryDto } from './dto/invoice-query.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -32,5 +33,17 @@ export class InvoicesController {
   @ApiResponse({ status: 409, description: 'Invoice number already exists' })
   async create(@Body() dto: CreateInvoiceDto, @CurrentUser() user: { id: string }) {
     return this.invoicesService.create(dto, user.id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update an existing invoice' })
+  @ApiResponse({ status: 200, description: 'Invoice updated' })
+  @ApiResponse({ status: 400, description: 'Paid invoices cannot be modified' })
+  @ApiResponse({ status: 404, description: 'Invoice not found' })
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateInvoiceDto,
+  ) {
+    return this.invoicesService.update(id, dto);
   }
 }
