@@ -428,6 +428,8 @@
               "layout": "vertical",
               "gap": 24,
               "padding": [
+                0,
+                40,
                 32,
                 40
               ],
@@ -2505,7 +2507,7 @@
               "layout": "vertical",
               "gap": 24,
               "padding": [
-                24,
+                0,
                 40,
                 32,
                 40
@@ -2516,6 +2518,16 @@
                   "id": "Ddo1X",
                   "name": "Top Bar",
                   "width": "fill_container",
+                  "fill": "$surface-primary",
+                  "stroke": "$border-subtle",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "strokeAlignment": "inner",
+                  "padding": [
+                    8,
+                    32
+                  ],
                   "justifyContent": "space_between",
                   "alignItems": "center",
                   "children": [
@@ -2523,15 +2535,15 @@
                       "type": "frame",
                       "id": "elDBZ",
                       "name": "Left",
-                      "gap": 12,
+                      "gap": 8,
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "KlBNg",
                           "name": "Back",
-                          "width": 36,
-                          "height": 36,
+                          "width": 32,
+                          "height": 32,
                           "fill": "$surface-primary",
                           "cornerRadius": "$rounded-full",
                           "stroke": "$border-subtle",
@@ -2544,8 +2556,8 @@
                               "type": "icon",
                               "id": "SrElq",
                               "name": "Icon",
-                              "width": 16,
-                              "height": 16,
+                              "width": 14,
+                              "height": 14,
                               "icon": "arrow-left",
                               "library": "lucide",
                               "fill": "$foreground-primary"
@@ -2557,7 +2569,7 @@
                           "id": "q4AaJe",
                           "name": "Title",
                           "layout": "vertical",
-                          "gap": 4,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "text",
@@ -2566,7 +2578,7 @@
                               "fill": "$foreground-primary",
                               "content": "Invoice Detail",
                               "fontFamily": "$font-heading",
-                              "fontSize": 24,
+                              "fontSize": 14,
                               "fontWeight": "600"
                             },
                             {
@@ -2576,7 +2588,7 @@
                               "fill": "$foreground-secondary",
                               "content": "Issued Jun 03, 2026 · Due Jul 03, 2026 · Paid in full",
                               "fontFamily": "$font-body",
-                              "fontSize": 13,
+                              "fontSize": 11,
                               "fontWeight": "normal"
                             }
                           ]
@@ -2587,7 +2599,7 @@
                       "type": "frame",
                       "id": "RYgf9",
                       "name": "Actions",
-                      "gap": 10,
+                      "gap": 8,
                       "alignItems": "center",
                       "children": [
                         {
@@ -2599,10 +2611,10 @@
                           "stroke": "$border-subtle",
                           "strokeWidth": 1,
                           "strokeAlignment": "inner",
-                          "gap": 8,
+                          "gap": 6,
                           "padding": [
-                            10,
-                            16
+                            6,
+                            12
                           ],
                           "alignItems": "center",
                           "children": [
@@ -2610,8 +2622,8 @@
                               "type": "icon",
                               "id": "cx978",
                               "name": "Icon",
-                              "width": 16,
-                              "height": 16,
+                              "width": 14,
+                              "height": 14,
                               "icon": "printer",
                               "library": "lucide",
                               "fill": "$foreground-primary"
@@ -2623,7 +2635,7 @@
                               "fill": "$foreground-primary",
                               "content": "Print",
                               "fontFamily": "$font-body",
-                              "fontSize": 14,
+                              "fontSize": 13,
                               "fontWeight": "500"
                             }
                           ]
@@ -2634,10 +2646,10 @@
                           "name": "Edit",
                           "fill": "$accent-primary",
                           "cornerRadius": "$rounded-full",
-                          "gap": 8,
+                          "gap": 6,
                           "padding": [
-                            10,
-                            18
+                            6,
+                            14
                           ],
                           "alignItems": "center",
                           "children": [
@@ -2645,8 +2657,8 @@
                               "type": "icon",
                               "id": "Au1YL",
                               "name": "Icon",
-                              "width": 16,
-                              "height": 16,
+                              "width": 14,
+                              "height": 14,
                               "icon": "pencil",
                               "library": "lucide",
                               "fill": "#FFFFFF"
@@ -2656,9 +2668,9 @@
                               "id": "rK9yy",
                               "name": "Label",
                               "fill": "#FFFFFF",
-                              "content": "Edit Invoice",
+                              "content": "Edit",
                               "fontFamily": "$font-body",
-                              "fontSize": 14,
+                              "fontSize": 13,
                               "fontWeight": "600"
                             }
                           ]
@@ -3408,7 +3420,7 @@
       "y": 0,
       "name": "SimpleInvoice — Create Invoice",
       "width": 1280,
-      "height": 1143,
+      "height": 1095,
       "fill": "#F7F8FA",
       "children": [
         {
@@ -3552,7 +3564,7 @@
               "layout": "vertical",
               "gap": 24,
               "padding": [
-                24,
+                0,
                 40,
                 40,
                 40
@@ -3563,6 +3575,16 @@
                   "id": "ZtFhz",
                   "name": "Top Bar",
                   "width": "fill_container",
+                  "fill": "$surface-primary",
+                  "stroke": "$border-subtle",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "strokeAlignment": "inner",
+                  "padding": [
+                    8,
+                    32
+                  ],
                   "justifyContent": "space_between",
                   "alignItems": "center",
                   "children": [
@@ -3570,15 +3592,15 @@
                       "type": "frame",
                       "id": "VOu3s",
                       "name": "Left",
-                      "gap": 12,
+                      "gap": 8,
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "K2UOTl",
                           "name": "Back",
-                          "width": 36,
-                          "height": 36,
+                          "width": 32,
+                          "height": 32,
                           "fill": "$surface-primary",
                           "cornerRadius": "$rounded-full",
                           "stroke": "$border-subtle",
@@ -3591,8 +3613,8 @@
                               "type": "icon",
                               "id": "z7hDc",
                               "name": "Icon",
-                              "width": 16,
-                              "height": 16,
+                              "width": 14,
+                              "height": 14,
                               "icon": "arrow-left",
                               "library": "lucide",
                               "fill": "$foreground-primary"
@@ -3604,7 +3626,7 @@
                           "id": "fv4OS",
                           "name": "Title",
                           "layout": "vertical",
-                          "gap": 4,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "text",
@@ -3613,7 +3635,7 @@
                               "fill": "$foreground-primary",
                               "content": "Create Invoice",
                               "fontFamily": "$font-heading",
-                              "fontSize": 24,
+                              "fontSize": 14,
                               "fontWeight": "600"
                             },
                             {
@@ -3623,7 +3645,7 @@
                               "fill": "$foreground-secondary",
                               "content": "New invoices are saved as Draft. Total amount is calculated by the server.",
                               "fontFamily": "$font-body",
-                              "fontSize": 13,
+                              "fontSize": 11,
                               "fontWeight": "normal"
                             }
                           ]
@@ -3634,7 +3656,7 @@
                       "type": "frame",
                       "id": "LNjqJ",
                       "name": "Actions",
-                      "gap": 10,
+                      "gap": 8,
                       "alignItems": "center",
                       "children": [
                         {
@@ -3646,8 +3668,8 @@
                           "strokeWidth": 1,
                           "strokeAlignment": "inner",
                           "padding": [
-                            10,
-                            18
+                            6,
+                            12
                           ],
                           "alignItems": "center",
                           "children": [
@@ -3657,7 +3679,7 @@
                               "fill": "$foreground-primary",
                               "content": "Cancel",
                               "fontFamily": "$font-body",
-                              "fontSize": 14,
+                              "fontSize": 13,
                               "fontWeight": "500"
                             }
                           ]
@@ -3667,18 +3689,18 @@
                           "id": "R5Jp7",
                           "fill": "$accent-primary",
                           "cornerRadius": "$rounded-full",
-                          "gap": 8,
+                          "gap": 6,
                           "padding": [
-                            10,
-                            18
+                            6,
+                            14
                           ],
                           "alignItems": "center",
                           "children": [
                             {
                               "type": "icon",
                               "id": "fBgct",
-                              "width": 16,
-                              "height": 16,
+                              "width": 14,
+                              "height": 14,
                               "icon": "save",
                               "library": "lucide",
                               "fill": "#ffffff"
@@ -3689,7 +3711,7 @@
                               "fill": "#ffffff",
                               "content": "Save",
                               "fontFamily": "$font-body",
-                              "fontSize": 14,
+                              "fontSize": 13,
                               "fontWeight": "600"
                             }
                           ]
@@ -5017,7 +5039,7 @@
       "ref": "u:Cpvvc",
       "name": "AppSidebar",
       "x": 0,
-      "y": -920,
+      "y": -1404,
       "width": 240,
       "height": 840,
       "cornerRadius": 0,
@@ -5200,7 +5222,7 @@
       "y": 0,
       "name": "SimpleInvoice — Edit Invoice",
       "width": 1280,
-      "height": 1143,
+      "height": 1095,
       "fill": "#F7F8FA",
       "children": [
         {
@@ -5344,7 +5366,7 @@
               "layout": "vertical",
               "gap": 24,
               "padding": [
-                24,
+                0,
                 40,
                 40,
                 40
@@ -5355,6 +5377,16 @@
                   "id": "qJHmo",
                   "name": "Top Bar",
                   "width": "fill_container",
+                  "fill": "$surface-primary",
+                  "stroke": "$border-subtle",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "strokeAlignment": "inner",
+                  "padding": [
+                    8,
+                    32
+                  ],
                   "justifyContent": "space_between",
                   "alignItems": "center",
                   "children": [
@@ -5362,15 +5394,15 @@
                       "type": "frame",
                       "id": "zNg2m",
                       "name": "Left",
-                      "gap": 12,
+                      "gap": 8,
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
                           "id": "xDxs8",
                           "name": "Back",
-                          "width": 36,
-                          "height": 36,
+                          "width": 32,
+                          "height": 32,
                           "fill": "$surface-primary",
                           "cornerRadius": "$rounded-full",
                           "stroke": "$border-subtle",
@@ -5383,8 +5415,8 @@
                               "type": "icon",
                               "id": "j8icE",
                               "name": "Icon",
-                              "width": 16,
-                              "height": 16,
+                              "width": 14,
+                              "height": 14,
                               "icon": "arrow-left",
                               "library": "lucide",
                               "fill": "$foreground-primary"
@@ -5396,7 +5428,7 @@
                           "id": "P6S6ya",
                           "name": "Title",
                           "layout": "vertical",
-                          "gap": 4,
+                          "gap": 2,
                           "children": [
                             {
                               "type": "text",
@@ -5405,7 +5437,7 @@
                               "fill": "$foreground-primary",
                               "content": "Edit Invoice",
                               "fontFamily": "$font-heading",
-                              "fontSize": 24,
+                              "fontSize": 14,
                               "fontWeight": "600"
                             },
                             {
@@ -5415,7 +5447,7 @@
                               "fill": "$foreground-secondary",
                               "content": "Update the invoice details below. Total amount is recalculated by the server on save.",
                               "fontFamily": "$font-body",
-                              "fontSize": 13,
+                              "fontSize": 11,
                               "fontWeight": "normal"
                             }
                           ]
@@ -5426,7 +5458,7 @@
                       "type": "frame",
                       "id": "a4flo6",
                       "name": "Actions",
-                      "gap": 10,
+                      "gap": 8,
                       "alignItems": "center",
                       "children": [
                         {
@@ -5438,8 +5470,8 @@
                           "strokeWidth": 1,
                           "strokeAlignment": "inner",
                           "padding": [
-                            10,
-                            18
+                            6,
+                            12
                           ],
                           "alignItems": "center",
                           "children": [
@@ -5449,7 +5481,7 @@
                               "fill": "$foreground-primary",
                               "content": "Cancel",
                               "fontFamily": "$font-body",
-                              "fontSize": 14,
+                              "fontSize": 13,
                               "fontWeight": "500"
                             }
                           ]
@@ -5459,18 +5491,18 @@
                           "id": "z9X8S",
                           "fill": "$accent-primary",
                           "cornerRadius": "$rounded-full",
-                          "gap": 8,
+                          "gap": 6,
                           "padding": [
-                            10,
-                            18
+                            6,
+                            14
                           ],
                           "alignItems": "center",
                           "children": [
                             {
                               "type": "icon",
                               "id": "W7n035",
-                              "width": 16,
-                              "height": 16,
+                              "width": 14,
+                              "height": 14,
                               "icon": "check",
                               "library": "lucide",
                               "fill": "#ffffff"
@@ -5481,7 +5513,7 @@
                               "fill": "#ffffff",
                               "content": "Update",
                               "fontFamily": "$font-body",
-                              "fontSize": 14,
+                              "fontSize": 13,
                               "fontWeight": "600"
                             }
                           ]
