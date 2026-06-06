@@ -1,0 +1,197 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FormattedMessage, useIntl } from 'react-intl';
+import {
+  ChevronUp,
+  LogOut,
+  Sun,
+  Moon,
+  Monitor,
+  Languages,
+} from 'lucide-react';
+import { useAuthStore } from '@/lib/auth';
+import { useTheme, type Theme } from '@/lib/theme';
+import { useLocale, type Locale } from '@/lib/i18n';
+
+function useClickOutside<T extends HTMLElement>(
+  ref: React.RefObject<T | null>,
+  handler: () => void,
+) {
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        handler();
+      }
+    }
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [ref, handler]);
+}
+
+/**
+ * Footer-anchored account menu inside the sidebar.
+ *
+ * Mirrors UserDropdown (theme + language + logout) but:
+ *   - Trigger is a flat row (avatar + name/email) that matches the
+ *     existing sidebar style, not a header pill.
+ *   - Popup opens UPWARD (`bottom-full`) because it's anchored at the
+ *     bottom of the page.
+ *   - Trigger collapses to just the avatar when the sidebar is collapsed.
+ */
+export default function SidebarAccountMenu({ collapsed }: { collapsed: boolean }) {
+  const navigate = useNavigate();
+  const intl = useIntl();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const { theme, setTheme } = useTheme();
+  const { locale, setLocale } = useLocale();
+
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useClickOutside(ref, useCallback(() => setOpen(false), []));
+
+  if (!user) return null;
+
+  const initial = user.fullname?.charAt(0)?.toUpperCase() ?? 'U';
+
+  function handleLogout() {
+    setOpen(false);
+    logout();
+    navigate('/login');
+  }
+
+  const themeOptions: Array<{ value: Theme; labelKey: string; Icon: typeof Sun }> = [
+    { value: 'light', labelKey: 'user.theme.light', Icon: Sun },
+    { value: 'dark', labelKey: 'user.theme.dark', Icon: Moon },
+    { value: 'system', labelKey: 'user.theme.system', Icon: Monitor },
+  ];
+
+  const langOptions: Array<{ value: Locale; short: string; label: string }> = [
+    { value: 'en', short: 'EN', label: 'English' },
+    { value: 'vi', short: 'VI', label: 'Tiếng Việt' },
+    { value: 'zh', short: '中', label: '中文' },
+  ];
+
+  return (
+    <div className="relative" ref={ref}>
+      {/* Trigger row — looks like part of the sidebar */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        title={collapsed ? user.email : undefined}
+        className={`w-full flex items-center cursor-pointer rounded-lg transition-colors hover:bg-gray-50 ${
+          collapsed ? 'justify-center p-1.5' : 'gap-2.5 p-2'
+        }`}
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-500 text-xs font-semibold text-white">
+          {initial}
+        </div>
+        {!collapsed && (
+          <>
+            <div className="flex flex-col min-w-0 items-start flex-1">
+              <span className="text-sm font-semibold truncate w-full text-left">
+                {user.fullname}
+              </span>
+              <span className="text-[11px] text-gray-400 truncate w-full text-left">
+                {user.email}
+              </span>
+            </div>
+            <ChevronUp
+              className={`h-3.5 w-3.5 shrink-0 text-gray-400 transition-transform ${open ? '' : 'rotate-180'}`}
+            />
+          </>
+        )}
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className={`absolute z-50 w-64 bg-white rounded-xl shadow-[0_2px_4px_#00000008,0_12px_32px_#0000000f] border border-gray-200 overflow-hidden bottom-full mb-2 ${
+            collapsed ? 'left-full ml-2' : 'left-0'
+          }`}
+        >
+          {/* Theme picker */}
+          <div className="px-3.5 py-2.5">
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              <Sun className="h-3.5 w-3.5" />
+              <FormattedMessage id="user.theme" />
+            </div>
+            <div
+              className="flex gap-1 rounded-lg bg-gray-100 p-0.5"
+              role="radiogroup"
+              aria-label="Theme"
+            >
+              {themeOptions.map(({ value, labelKey, Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setTheme(value)}
+                  role="radio"
+                  aria-checked={theme === value}
+                  className={`flex-1 flex items-center justify-center gap-1 rounded-md py-1.5 text-[12px] font-medium cursor-pointer transition-colors ${
+                    theme === value
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                  title={intl.formatMessage({ id: labelKey })}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  <FormattedMessage id={labelKey} />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-px bg-gray-200" />
+
+          {/* Language picker */}
+          <div className="px-3.5 py-2.5">
+            <div className="flex items-center gap-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              <Languages className="h-3.5 w-3.5" />
+              <FormattedMessage id="user.language" />
+            </div>
+            <div
+              className="flex gap-1 rounded-lg bg-gray-100 p-0.5"
+              role="radiogroup"
+              aria-label="Language"
+            >
+              {langOptions.map(({ value, short, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setLocale(value)}
+                  role="radio"
+                  aria-checked={locale === value}
+                  title={label}
+                  className={`flex-1 flex items-center justify-center rounded-md py-1.5 text-[12px] font-semibold cursor-pointer transition-colors ${
+                    locale === value
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  {short}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-px bg-gray-200" />
+
+          {/* Logout */}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-2.5 w-full px-3.5 py-3 hover:bg-red-50 text-left cursor-pointer transition-colors"
+          >
+            <LogOut className="h-4 w-4 text-red-600" />
+            <span className="text-[13px] font-medium text-red-600">
+              <FormattedMessage id="user.logout" />
+            </span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

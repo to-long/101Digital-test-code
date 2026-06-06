@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIntl } from 'react-intl';
-import { useAuthStore } from '@/lib/auth';
+import SidebarAccountMenu from './sidebar-account-menu';
 import {
   FileText,
   LayoutDashboard,
@@ -36,7 +36,6 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const intl = useIntl();
-  const user = useAuthStore((s) => s.user);
   const [collapsed, setCollapsed] = useState<boolean>(getInitialCollapsed);
 
   // Auto-collapse on resize to mobile, restore on desktop
@@ -134,21 +133,9 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className={`border-t ${collapsed ? 'px-2 py-3' : 'px-6 py-4'}`}>
-        {collapsed ? (
-          <div
-            title={user?.email ?? ''}
-            className="flex h-9 w-9 mx-auto items-center justify-center rounded-full bg-blue-500 text-xs font-semibold text-white"
-          >
-            {user?.fullname?.charAt(0)?.toUpperCase() ?? 'U'}
-          </div>
-        ) : (
-          <>
-            <p className="text-sm font-semibold truncate">{user?.fullname ?? 'User'}</p>
-            <p className="text-xs text-gray-400 truncate">{user?.email ?? ''}</p>
-          </>
-        )}
+      {/* Footer — clickable account menu (theme / language / logout) */}
+      <div className={`border-t ${collapsed ? 'p-2' : 'px-3 py-3'}`}>
+        <SidebarAccountMenu collapsed={collapsed} />
       </div>
     </aside>
   );

@@ -157,7 +157,7 @@ export default function EditInvoicePage() {
   const isPaid = invoice.status === 'Paid';
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-[1280px] mx-auto">
       {/* TOP BAR — sticky, matches the detail page chrome */}
       <div className="sticky -top-3 sm:-top-4 z-20 -mx-4 sm:-mx-8 -mt-3 sm:-mt-4 px-4 sm:px-8 py-2 bg-white border-b border-gray-100 flex justify-between items-center gap-3">
         <div className="flex items-center gap-2 min-w-0">
