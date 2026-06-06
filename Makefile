@@ -46,5 +46,5 @@ test:
 	cd apps/be && bun test
 
 kill:
-	-lsof -ti:3000 | xargs kill -9 2>/dev/null
-	-lsof -ti:5173 | xargs kill -9 2>/dev/null
+	-lsof -ti:4001 | xargs kill -9 2>/dev/null
+	-lsof -ti:3041 | xargs kill -9 2>/dev/null

@@ -3,7 +3,7 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT:-5441}:5432"
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
@@ -22,7 +22,7 @@ services:
       dockerfile: apps/be/Dockerfile
     restart: unless-stopped
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT:-4001}:4001"
     env_file:
       - .env
     environment:
@@ -37,7 +37,7 @@ services:
       dockerfile: apps/fe/Dockerfile
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "3041:80"
     depends_on:
       - backend
 

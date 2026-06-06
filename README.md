@@ -47,7 +47,7 @@ make setup    # installs deps, starts DB, runs migrations, seeds data
 make dev      # backend on :3000, frontend on :5173
 ```
 
-Open http://localhost:5173 in your browser.
+Open http://localhost:3041 in your browser.
 
 ## Docker (Production)
 
@@ -55,7 +55,7 @@ Open http://localhost:5173 in your browser.
 docker compose up --build
 ```
 
-This starts PostgreSQL, backend, and frontend. The app is available at http://localhost:80.
+This starts PostgreSQL, backend, and frontend. The app is available at http://localhost:3041.
 
 After containers are up, run migrations and seed:
 
@@ -72,7 +72,7 @@ docker compose exec backend bun run apps/be/src/db/seed.ts
 
 ## API Documentation
 
-Swagger UI is available at http://localhost:3000/api/docs when the backend is running.
+Swagger UI is available at http://localhost:4001/api/docs when the backend is running.
 
 ### Endpoints
 
@@ -119,16 +119,16 @@ Seeds 1 admin user and 36 invoices with varied statuses, dates, amounts, and cus
 | PORT | Backend port | 3000 |
 | JWT_SECRET | JWT signing secret | (required in production) |
 | JWT_EXPIRATION | Token TTL in seconds | 3600 |
-| FRONTEND_URL | CORS allowed origin | http://localhost:5173 |
+| FRONTEND_URL | CORS allowed origin | http://localhost:3041 |
 
 ## Exposed Ports
 
 | Service | Port |
 |---------|------|
-| Frontend (dev) | 5173 |
-| Backend | 3000 |
-| Frontend (Docker) | 80 |
-| PostgreSQL | 5432 |
+| Frontend (dev) | 3041 |
+| Backend | 4001 |
+| Frontend (Docker) | 3041 |
+| PostgreSQL | 5441 |
 
 ## Design Decisions
 
