@@ -1,4 +1,4 @@
-.PHONY: install up up-all down dev dev-be dev-fe migrate\:generate migrate seed setup lint format test kill
+.PHONY: install up up-all down dev dev-be dev-fe migrate\:generate migrate seed setup lint format test test-e2e kill
 
 install:
 	bun install
@@ -44,6 +44,9 @@ format:
 
 test:
 	cd apps/be && bun test
+
+test-e2e:
+	cd apps/fe && bun run test:e2e
 
 kill:
 	-lsof -ti:4001 | xargs kill -9 2>/dev/null

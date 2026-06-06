@@ -32,6 +32,10 @@ coverage/
 .vitest-cache/
 playwright-report/
 test-results/
+# Playwright E2E artifacts (per-spec results, HTML report, saved auth state)
+apps/fe/e2e/.results/
+apps/fe/e2e/.report/
+apps/fe/e2e/.auth/
 
 # ─── Linter / formatter caches ──────────────────────────────────────────────
 .eslintcache

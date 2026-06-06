@@ -396,7 +396,8 @@ Swagger UI: <http://localhost:4001/api/docs> (when the backend is running).
 | `make dev-fe` | Frontend only |
 | `make migrate` | Run database migrations |
 | `make seed` | Reseed the database |
-| `make test` | Run all tests (BE unit + e2e) |
+| `make test` | Run BE unit + API contract tests |
+| `make test-e2e` | Run FE Playwright E2E suite (needs `make dev` running) |
 | `make lint` | Lint via Biome |
 | `make format` | Format via Biome |
 | `make kill` | Kill dev servers on ports 4001 / 3041 |
@@ -452,8 +453,38 @@ make test
 
 ### Coverage
 
-- **Unit**: invoice calculation correctness (8 cases), Overdue derivation (6 cases), due-date validation (3 cases)
-- **E2E**: full login → list → create → detail → update flow (13 cases) including 400/401/404 error paths
+Tests live in three layers:
+
+| Layer | Where | Coverage | Driver |
+|-------|-------|----------|--------|
+| **Unit (BE)** | `apps/be/test/invoices.service.spec.ts` | Invoice calc correctness (8), Overdue derivation (6), due-date validation (3) | `bun:test` |
+| **API contract (BE)** | `apps/be/test/app.e2e.spec.ts` + `invoices.bdd.spec.ts` | 13 traditional endpoint tests + **18 BDD scenarios** (Given/When/Then) covering auth, list filters, create, edit, soft delete, Paid immutability | `bun:test` over the running BE on :4001 |
+| **User journey (FE)** | `apps/fe/e2e/*.spec.ts` | **19 Playwright scenarios** covering login (guest), browse/filter/sort/paginate, create→edit→delete lifecycle, theme + locale switching | Playwright Chromium over the running dev stack |
+
+```bash
+# BE unit + API contract
+make test          # = cd apps/be && bun test
+
+# FE E2E (requires `make dev` running)
+make test-e2e      # = cd apps/fe && bun run test:e2e
+# or interactive UI mode:
+cd apps/fe && bun run test:e2e:ui
+```
+
+#### Playwright E2E details
+
+The `apps/fe/e2e/` suite is driven by `playwright.config.ts` with two projects:
+
+- **`guest`** — no shared auth state. Tests the login / signup-style flow, deep-link redirect to /login, and the guest settings dropdown.
+- **`authenticated`** — `globalSetup` logs in once as admin and persists the Zustand auth store + cookies to `e2e/.auth/admin.json`; every subsequent spec loads from that storage state so we don't burn ~1s per test re-typing credentials.
+
+Tests run serially (`workers: 1`) because they share a database. Per-test isolation comes from `uniqueInvoiceNumber()` (timestamp + random suffix), not a per-test DB reset. Each lifecycle scenario creates its own invoice, then either deletes it or leaves it behind harmlessly — the seed dataset isn't mutated in a way that matters.
+
+Failures retain trace, screenshot, and video under `e2e/.results/` (gitignored). Trace viewer:
+
+```bash
+bunx playwright show-trace apps/fe/e2e/.results/<scenario>/trace.zip
+```
 
 ## Seed data
 
