@@ -9,5 +9,8 @@
     "test": "cd apps/be && bun test && cd ../../apps/fe && bun test",
     "lint": "bunx biome check .",
     "format": "bunx biome format --write ."
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
   }
 }
